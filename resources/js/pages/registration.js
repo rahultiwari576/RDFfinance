@@ -1,6 +1,3 @@
-import axios from 'axios';
-import Swal from 'sweetalert2';
-
 $(function () {
     const form = $('#registrationForm');
     const extractButton = $('#extractAadharButton');
@@ -32,14 +29,15 @@ $(function () {
     }
 
     function validateStep1() {
-        const name = $('#regName').val();
+        const firstName = $('#regFirstName').val();
+        const lastName = $('#regLastName').val();
         const email = $('#regEmail').val();
         const password = $('#regPassword').val();
         const passwordConfirm = $('#regPasswordConfirm').val();
         const age = $('#regAge').val();
         const phone = $('#regPhone').val();
 
-        if (!name || !email || !password || !passwordConfirm || !age || !phone) {
+        if (!firstName || !lastName || !email || !password || !passwordConfirm || !age || !phone) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Incomplete Form',
@@ -150,6 +148,11 @@ $(function () {
         this.value = this.value.replace(/\D/g, '').slice(0, 10);
     });
 
+    // Alternative Phone Number Formatting
+    $('#regAltPhone').on('input', function() {
+        this.value = this.value.replace(/\D/g, '').slice(0, 10);
+    });
+
     // Aadhar Number Formatting
     $('#aadhar_number_field').on('input', function() {
         this.value = this.value.replace(/\D/g, '').slice(0, 12);
@@ -172,6 +175,16 @@ $(function () {
         const file = this.files[0];
         if (file) {
             $('#panFileName').removeClass('d-none').html(`<i class="bi bi-file-check me-2"></i>${file.name}`);
+        }
+    });
+
+    // Driving License File Upload Handler
+    $('#driving_license').on('change', function() {
+        const file = this.files[0];
+        if (file) {
+            $('#drivingLicenseFileName').removeClass('d-none').html(`<i class="bi bi-file-check me-2"></i>${file.name}`);
+        } else {
+            $('#drivingLicenseFileName').addClass('d-none');
         }
     });
 
@@ -216,12 +229,39 @@ $(function () {
         });
     });
 
+    // Validate Step 2
+    function validateStep2() {
+        const aadhar = $('#aadhar_number_field').val();
+        const pan = $('#regPAN').val();
+        const addressType = $('#regAddressType').val();
+        const employmentType = $('#regEmploymentType').val();
+        const aadharFile = $('#aadhar_document')[0].files.length;
+        const panFile = $('#pan_document')[0].files.length;
+
+        if (!aadhar || !pan || !addressType || !employmentType || !aadharFile || !panFile) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Incomplete Form',
+                text: 'Please fill in all required fields in the document section'
+            });
+            return false;
+        }
+
+        return true;
+    }
+
     // Form Submission
     form.on('submit', function (e) {
         e.preventDefault();
         
         if (!validateStep1()) {
             showStep(1);
+            updateProgress();
+            return;
+        }
+
+        if (!validateStep2()) {
+            showStep(2);
             updateProgress();
             return;
         }

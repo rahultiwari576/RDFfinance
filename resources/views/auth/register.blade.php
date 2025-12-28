@@ -38,13 +38,33 @@
                     </h5>
                     
                     <div class="row g-3">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="form-group">
                                 <label class="form-label">
-                                    <i class="bi bi-person me-2"></i>Full Name
+                                    <i class="bi bi-person me-2"></i>First Name <span class="text-danger">*</span>
                                 </label>
                                 <div class="input-wrapper">
-                                    <input type="text" name="name" id="regName" class="form-control auth-input" placeholder="Enter your full name" required>
+                                    <input type="text" name="first_name" id="regFirstName" class="form-control auth-input" placeholder="Enter first name" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-person me-2"></i>Middle Name
+                                </label>
+                                <div class="input-wrapper">
+                                    <input type="text" name="middle_name" id="regMiddleName" class="form-control auth-input" placeholder="Enter middle name (optional)">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-person me-2"></i>Last Name <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-wrapper">
+                                    <input type="text" name="last_name" id="regLastName" class="form-control auth-input" placeholder="Enter last name" required>
                                 </div>
                             </div>
                         </div>
@@ -141,10 +161,59 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="form-label">
+                                    <i class="bi bi-phone me-2"></i>Alternative Mobile Number
+                                </label>
+                                <div class="input-wrapper">
+                                    <input type="text" name="alternative_phone_number" id="regAltPhone" class="form-control auth-input" maxlength="10" placeholder="Enter alternative phone (optional)">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">
                                     <i class="bi bi-file-text me-2"></i>PAN Number
                                 </label>
                                 <div class="input-wrapper">
                                     <input type="text" name="pan_number" id="regPAN" class="form-control auth-input" maxlength="10" placeholder="Enter PAN number" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-geo-alt me-2"></i>Address Type <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-wrapper">
+                                    <select name="address_type" id="regAddressType" class="form-control auth-input" required>
+                                        <option value="">Select Address Type</option>
+                                        <option value="RESIDENTIAL">RESIDENTIAL</option>
+                                        <option value="PERMANENT">PERMANENT</option>
+                                        <option value="OFFICE">OFFICE</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-house me-2"></i>Address
+                                </label>
+                                <div class="input-wrapper">
+                                    <textarea name="address" id="regAddress" class="form-control auth-input" rows="3" placeholder="Enter your complete address"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-briefcase me-2"></i>Employment Type <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-wrapper">
+                                    <select name="employment_type" id="regEmploymentType" class="form-control auth-input" required>
+                                        <option value="">Select Employment Type</option>
+                                        <option value="self_employed">Self Employed</option>
+                                        <option value="salaried">Salaried</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -175,6 +244,21 @@
                                         <span class="file-text">Choose PAN File</span>
                                     </label>
                                     <div class="file-name d-none" id="panFileName"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-upload me-2"></i>Upload Driving License
+                                </label>
+                                <div class="file-upload-wrapper">
+                                    <input type="file" name="driving_license" id="driving_license" class="file-input" accept=".pdf,.jpg,.jpeg,.png">
+                                    <label for="driving_license" class="file-label">
+                                        <i class="bi bi-cloud-upload me-2"></i>
+                                        <span class="file-text">Choose Driving License File</span>
+                                    </label>
+                                    <div class="file-name d-none" id="drivingLicenseFileName"></div>
                                 </div>
                             </div>
                         </div>

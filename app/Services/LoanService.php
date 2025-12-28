@@ -49,7 +49,17 @@ class LoanService
         $totalRepayment = round($emi * $tenure, 2);
         $schedule = [];
         $balance = $totalRepayment;
-        $dueDate = Carbon::now()->addMonth();
+        
+        // Start from next month, set due date to 10th of each month
+        $dueDate = Carbon::now()->addMonth()->day(10);
+        
+        // If today is past the 10th of current month, start from next month's 10th
+        if (Carbon::now()->day > 10) {
+            $dueDate = Carbon::now()->addMonth()->day(10);
+        } else {
+            // If today is before 10th, first EMI is 10th of next month
+            $dueDate = Carbon::now()->addMonth()->day(10);
+        }
 
         for ($i = 1; $i <= $tenure; $i++) {
             $schedule[] = [
@@ -57,7 +67,8 @@ class LoanService
                 'due_date' => $dueDate->copy(),
                 'amount' => $emi,
             ];
-            $dueDate = $dueDate->copy()->addMonth();
+            // Move to 10th of next month
+            $dueDate = $dueDate->copy()->addMonth()->day(10);
             $balance -= $emi;
         }
 
@@ -77,11 +88,15 @@ class LoanService
     public function createInstallments(Loan $loan, array $schedule, ?float $customPenalty = null): void
     {
         foreach ($schedule as $item) {
+            // Ensure due date is set to 10th of the month
+            $dueDate = Carbon::parse($item['due_date']);
+            $dueDate->day(10);
+            
             $loan->installments()->create([
-                'due_date' => Carbon::parse($item['due_date']),
+                'due_date' => $dueDate,
                 'amount' => $item['amount'],
                 'status' => 'pending',
-                'penalty_amount' => $customPenalty ?? config('loan.default_penalty', 100),
+                'penalty_amount' => $customPenalty ?? 593, // Default bouncing charge
             ]);
         }
     }
@@ -95,6 +110,9 @@ class LoanService
             ->latest()
             ->get()
             ->map(function (Loan $loan) {
+                // Get only 1 upcoming EMI with bouncing charge logic
+                $upcomingEMIs = $this->getUpcomingEMIs($loan, 1);
+                
                 return [
                     'id' => $loan->id,
                     'principal_amount' => (float) $loan->principal_amount,
@@ -106,6 +124,7 @@ class LoanService
                     'next_due_date' => optional($loan->next_due_date)->format('Y-m-d'),
                     'penalty_amount' => (float) $loan->penalty_amount,
                     'custom_penalty_amount' => $loan->custom_penalty_amount ? (float) $loan->custom_penalty_amount : null,
+                    'upcoming_emis' => $upcomingEMIs,
                     'installments' => $loan->installments->map(function (LoanInstallment $installment) {
                         return [
                             'id' => $installment->id,
@@ -139,14 +158,16 @@ class LoanService
         })->values();
     }
 
-    public function markInstallmentPaid(LoanInstallment $installment, ?float $customPenalty = null): void
+    public function markInstallmentPaid(LoanInstallment $installment, ?float $customPenalty = null, ?float $paymentAmount = null): void
     {
         $penalty = $customPenalty !== null ? $customPenalty : $installment->penalty_amount;
 
         if ($installment->due_date->isPast() && $customPenalty === null) {
-            $penalty = config('loan.default_penalty', 100);
+            $penalty = config('loan.default_penalty', 593);
         }
 
+        // If payment amount is provided and different from installment amount, adjust accordingly
+        // Note: The payment_amount is for tracking purposes, the installment amount remains the same
         $installment->update([
             'status' => 'paid',
             'paid_at' => Carbon::now(),
@@ -242,6 +263,92 @@ class LoanService
                 'next_due_date' => $nextInstallment?->due_date,
             ]);
         }
+    }
+    
+    /**
+     * Get upcoming EMIs with bouncing charge logic
+     * Shows only 1 upcoming EMI with dates: 10th, 12th (if 10th bounces), 15th (if 12th bounces)
+     * Penalty: ₹593 on 10th, ₹593 on 12th, custom on 15th
+     */
+    public function getUpcomingEMIs(Loan $loan, int $limit = 1): array
+    {
+        $pendingInstallments = $loan->installments()
+            ->where('status', 'pending')
+            ->orderBy('due_date')
+            ->limit($limit)
+            ->get();
+        
+        $upcomingEMIs = [];
+        $bouncingCharge = 593; // Updated to 593
+        
+        foreach ($pendingInstallments as $installment) {
+            $dueDate = Carbon::parse($installment->due_date);
+            $month = $dueDate->format('F Y');
+            
+            // Always set to 10th of the month
+            $baseDate = $dueDate->copy()->day(10);
+            
+            // Calculate which date to show based on current date
+            $today = Carbon::now();
+            $day10 = $baseDate->copy();
+            $day12 = $baseDate->copy()->day(12);
+            $day15 = $baseDate->copy()->day(15);
+            
+            $displayDate = $day10;
+            $bouncingNote = '';
+            $totalPenalty = 0;
+            $totalAmount = (float) $installment->amount;
+            
+            // Calculate penalties based on bouncing
+            if ($today->greaterThan($day10)) {
+                $totalPenalty += $bouncingCharge; // First penalty on 10th
+                $totalAmount += $bouncingCharge;
+                $displayDate = $day12;
+                $bouncingNote = 'Payment bounced on 10th. Penalty ₹593 applied. New due date: 12th';
+                
+                // If 12th has also passed, show 15th
+                if ($today->greaterThan($day12)) {
+                    $totalPenalty += $bouncingCharge; // Second penalty on 12th
+                    $totalAmount += $bouncingCharge;
+                    $displayDate = $day15;
+                    $bouncingNote = 'Payment bounced on 10th & 12th. Penalty ₹1186 applied. Final due date: 15th';
+                    
+                    // If 15th has also passed, admin can add custom penalty
+                    if ($today->greaterThan($day15)) {
+                        $customPenalty = $installment->penalty_amount > 1186 ? $installment->penalty_amount - 1186 : 0;
+                        if ($customPenalty > 0) {
+                            $totalPenalty += $customPenalty;
+                            $totalAmount += $customPenalty;
+                            $bouncingNote = 'Payment bounced on 10th, 12th & 15th. Total penalty ₹' . number_format($totalPenalty, 2) . '. Admin custom penalty applied.';
+                        } else {
+                            $bouncingNote = 'Payment bounced on 10th, 12th & 15th. Admin can add custom penalty.';
+                        }
+                    }
+                }
+            } else {
+                // Not yet bounced, but penalty will be applied on 10th
+                $totalPenalty = $bouncingCharge;
+                $totalAmount += $bouncingCharge;
+            }
+            
+            $upcomingEMIs[] = [
+                'id' => $installment->id,
+                'installment_number' => $installment->id,
+                'due_date' => $baseDate->format('Y-m-d'),
+                'display_date' => $displayDate->format('Y-m-d'),
+                'display_date_formatted' => $displayDate->format('d M Y'),
+                'month' => $month,
+                'amount' => (float) $installment->amount,
+                'penalty_amount' => $totalPenalty,
+                'total_amount' => $totalAmount,
+                'bouncing_charge' => $bouncingCharge,
+                'bouncing_note' => $bouncingNote,
+                'status' => $installment->status,
+                'pay_url' => route('loans.installments.pay', $installment),
+            ];
+        }
+        
+        return $upcomingEMIs;
     }
 }
 

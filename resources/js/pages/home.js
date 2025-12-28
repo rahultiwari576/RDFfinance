@@ -1,13 +1,11 @@
-import axios from 'axios';
-import Swal from 'sweetalert2';
-
 $(function () {
     const loansContainer = $('#loansContainer');
     const remindersContainer = $('#remindersContainer');
     const loanForm = $('#loanApplicationForm');
 
-    const loansUrl = loanForm.data('listUrl');
-    const calculateUrl = loanForm.data('calculateUrl');
+    // Get loans URL from container (works for both admin and user)
+    const loansUrl = loansContainer.data('listUrl') || loanForm.data('listUrl') || '/loans';
+    const calculateUrl = loanForm.data('calculateUrl') || '/emi/calculate';
 
 
     const fetchReminders = () => {
@@ -29,7 +27,7 @@ $(function () {
             return;
         }
 
-        // Simple list format
+        // Simple list format with upcoming EMIs
         const template = loans.map((loan) => {
             const paidCount = loan.installments.filter(inst => inst.status === 'paid').length;
             const unpaidCount = loan.installments.filter(inst => inst.status !== 'paid').length;
@@ -39,11 +37,43 @@ $(function () {
                     ? '<span class="badge bg-secondary">Completed</span>' 
                     : '<span class="badge bg-warning">Pending</span>';
 
+            // Render upcoming EMIs (only 1)
+            let upcomingEMIsHtml = '';
+            if (loan.upcoming_emis && loan.upcoming_emis.length > 0) {
+                const emi = loan.upcoming_emis[0]; // Only show first one
+                const formattedDate = emi.display_date_formatted || emi.display_date;
+                const bouncingNote = emi.bouncing_note ? 
+                    `<small class="text-danger d-block mt-1"><i class="bi bi-exclamation-triangle"></i> ${emi.bouncing_note}</small>` : '';
+                
+                upcomingEMIsHtml = `
+                    <div class="card mb-2 border-warning">
+                        <div class="card-body p-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>Due Date: ${formattedDate}</strong>
+                                    <div class="text-muted small">EMI: ₹${Number(emi.amount).toFixed(2)}</div>
+                                    ${bouncingNote}
+                                </div>
+                                <div class="text-end">
+                                    <div class="text-danger"><strong>₹${Number(emi.total_amount).toFixed(2)}</strong></div>
+                                    <small class="text-muted">(₹${Number(emi.penalty_amount).toFixed(2)} penalty)</small>
+                                </div>
+                            </div>
+                            <div class="alert alert-warning mt-2 mb-0 py-1 px-2">
+                                <small><i class="bi bi-info-circle"></i> <strong>Bouncing Charges:</strong> ₹593 will be applied on the 10th of every month. If payment bounces on 10th, penalty ₹593 added and due date moves to 12th. If it bounces on 12th, another ₹593 penalty added and due date moves to 15th. If it bounces on 15th, admin can add custom penalty.</small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                upcomingEMIsHtml = '<p class="text-muted small mb-0">No upcoming EMIs</p>';
+            }
+
             return `
                 <div class="list-group-item list-group-item-action loan-item" 
                      data-loan-id="${loan.id}" 
                      style="cursor: pointer;">
-                    <div class="d-flex w-100 justify-content-between align-items-center">
+                    <div class="d-flex w-100 justify-content-between align-items-center mb-2">
                         <div>
                             <h6 class="mb-1">Loan #${loan.id}</h6>
                             <p class="mb-1 text-muted">
@@ -52,11 +82,14 @@ $(function () {
                                 ${statusBadge}
                             </p>
                             <small class="text-muted">
-                                Paid: ${paidCount} | Pending: ${unpaidCount} | 
-                                Next Due: ${loan.next_due_date ?? 'N/A'}
+                                Paid: ${paidCount} | Pending: ${unpaidCount}
                             </small>
                         </div>
                         <i class="bi bi-chevron-right"></i>
+                    </div>
+                    <div class="mt-2">
+                        <strong class="text-primary">Upcoming EMIs:</strong>
+                        ${upcomingEMIsHtml}
                     </div>
                 </div>
             `;
@@ -69,16 +102,22 @@ $(function () {
     let loansData = [];
 
     const fetchLoans = () => {
+        if (!loansUrl) {
+            loansContainer.html('<p class="text-danger">Loans URL not configured.</p>');
+            return Promise.reject(new Error('Loans URL not configured'));
+        }
+        
         loansContainer.html('<p class="text-muted">Loading loans...</p>');
         return axios.get(loansUrl)
             .then(({ data }) => {
-                loansData = data.loans;
-                renderLoans(data.loans);
-                return data.loans;
+                loansData = data.loans || [];
+                renderLoans(data.loans || []);
+                return data.loans || [];
             })
-            .catch(() => {
-                loansContainer.html('<p class="text-danger">Failed to load loans.</p>');
-                throw new Error('Failed to load loans');
+            .catch((error) => {
+                console.error('Error fetching loans:', error);
+                loansContainer.html('<p class="text-danger">Failed to load loans. Please refresh the page.</p>');
+                throw new Error('Failed to load loans: ' + (error.response?.data?.message || error.message));
             });
     };
 
@@ -302,22 +341,73 @@ $(function () {
             </tr>
         `).join('');
 
-        // Render pending EMIs
+        // Render pending EMIs with bouncing logic
         const pendingEMIsHtml = pendingEMIs.map(emi => {
             const isUpcoming = upcomingEmi && emi.id === upcomingEmi.id;
             const rowClass = isUpcoming ? 'table-warning' : 'table-light';
+            
+            // Calculate bouncing dates and penalties
+            const dueDate = new Date(emi.due_date);
+            const month = dueDate.getMonth();
+            const year = dueDate.getFullYear();
+            const day10 = new Date(year, month, 10);
+            const day12 = new Date(year, month, 12);
+            const day15 = new Date(year, month, 15);
+            const today = new Date();
+            
+            let displayDate = day10;
+            let totalPenalty = 593; // Base penalty on 10th
+            let totalAmount = Number(emi.amount) + totalPenalty;
+            let penaltyNote = '';
+            
+            if (today > day10) {
+                displayDate = day12;
+                penaltyNote = '<small class="text-danger d-block">Bounced on 10th: +₹593</small>';
+                if (today > day12) {
+                    totalPenalty += 593; // Second penalty on 12th
+                    totalAmount = Number(emi.amount) + totalPenalty;
+                    displayDate = day15;
+                    penaltyNote = '<small class="text-danger d-block">Bounced on 10th & 12th: +₹1186</small>';
+                    if (today > day15) {
+                        // Admin can add custom penalty
+                        const customPenalty = Number(emi.penalty_amount) - 1186;
+                        if (customPenalty > 0) {
+                            totalPenalty += customPenalty;
+                            totalAmount = Number(emi.amount) + totalPenalty;
+                            penaltyNote = `<small class="text-danger d-block">Bounced on 10th, 12th & 15th: +₹${totalPenalty.toFixed(2)} (includes custom penalty)</small>`;
+                        } else {
+                            penaltyNote = '<small class="text-danger d-block">Bounced on 10th, 12th & 15th: Admin can add custom penalty</small>';
+                        }
+                    }
+                }
+            }
+            
+            const formattedDate = displayDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+            
+            const statusBadge = emi.status === 'overdue' 
+                ? '<span class="badge bg-danger">Overdue</span>'
+                : isUpcoming 
+                    ? '<span class="badge bg-warning text-dark">Upcoming</span>' 
+                    : '<span class="badge bg-secondary">Pending</span>';
+            
             return `
                 <tr class="${rowClass}">
-                    <td><strong>${emi.due_date}</strong></td>
-                    <td>₹${Number(emi.amount).toFixed(2)}</td>
                     <td>
-                        ${isUpcoming 
-                            ? '<span class="badge bg-warning text-dark">Upcoming</span>' 
-                            : '<span class="badge bg-secondary">Pending</span>'}
+                        <strong>${formattedDate}</strong>
+                        ${penaltyNote}
                     </td>
+                    <td>
+                        ₹${Number(emi.amount).toFixed(2)}
+                        <br><small class="text-danger">+ Penalty: ₹${totalPenalty.toFixed(2)}</small>
+                        <br><strong class="text-danger">Total: ₹${totalAmount.toFixed(2)}</strong>
+                    </td>
+                    <td>${statusBadge}</td>
                     <td>-</td>
                     <td>
-                        <button class="btn btn-sm btn-primary pay-now" data-emi-id="${emi.id}" data-emi-amount="${emi.amount}" data-emi-date="${emi.due_date}">
+                        <button class="btn btn-sm btn-info send-reminder" data-emi-id="${emi.id}" data-emi-date="${emi.due_date}" title="Send Email Reminder">
+                            <i class="bi bi-envelope"></i> Reminder
+                        </button>
+                        <button class="btn btn-sm btn-primary pay-now ms-1" data-emi-id="${emi.id}" data-emi-amount="${totalAmount}" data-emi-date="${formattedDate}">
                             Pay Now
                         </button>
                         ${isAdmin ? `<button class="btn btn-sm btn-danger delete-emi ms-1" data-emi-id="${emi.id}">Delete</button>` : ''}
@@ -455,8 +545,21 @@ $(function () {
             <div class="payment-flow">
                 <div class="mb-3">
                     <h6>Payment Details</h6>
-                    <p class="mb-1"><strong>EMI Amount:</strong> ₹${Number(amount).toFixed(2)}</p>
                     <p class="mb-1"><strong>Due Date:</strong> ${dueDate}</p>
+                    <div class="mb-3">
+                        <label for="payment_amount" class="form-label"><strong>Payment Amount (₹)</strong> <small class="text-muted">(You can modify this amount)</small></label>
+                        <div class="input-group">
+                            <span class="input-group-text">₹</span>
+                            <input type="number" 
+                                   class="form-control" 
+                                   id="payment_amount" 
+                                   value="${Number(amount).toFixed(2)}" 
+                                   min="0" 
+                                   step="0.01"
+                                   required>
+                        </div>
+                        <small class="text-muted">Original EMI amount: ₹${Number(amount).toFixed(2)}</small>
+                    </div>
                 </div>
                 <hr>
                 <div class="mb-3">
@@ -501,6 +604,7 @@ $(function () {
                     </div>
                 </div>
                 <input type="hidden" id="payment_emi_id" value="${emiId}">
+                <input type="hidden" id="payment_original_amount" value="${Number(amount).toFixed(2)}">
             </div>
         `;
 
@@ -512,11 +616,40 @@ $(function () {
     $(document).on('click', '.payment-method', function() {
         const method = $(this).data('method');
         const emiId = $('#payment_emi_id').val();
-        processPayment(emiId, method);
+        const paymentAmount = parseFloat($('#payment_amount').val());
+        const originalAmount = parseFloat($('#payment_original_amount').val());
+        
+        // Validate payment amount
+        if (isNaN(paymentAmount) || paymentAmount <= 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid Amount',
+                text: 'Please enter a valid payment amount greater than 0.'
+            });
+            return;
+        }
+        
+        // Show confirmation if amount is different
+        if (paymentAmount !== originalAmount) {
+            Swal.fire({
+                icon: 'question',
+                title: 'Confirm Payment Amount',
+                html: `Original EMI amount: ₹${originalAmount.toFixed(2)}<br>Your payment amount: ₹${paymentAmount.toFixed(2)}<br><br>Do you want to proceed with ₹${paymentAmount.toFixed(2)}?`,
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Proceed',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    processPayment(emiId, method, paymentAmount);
+                }
+            });
+        } else {
+            processPayment(emiId, method, paymentAmount);
+        }
     });
 
     // Process payment
-    const processPayment = (emiId, method) => {
+    const processPayment = (emiId, method, paymentAmount) => {
         // Find the pay URL from loansData
         const allInstallments = loansData.flatMap(loan => 
             loan.installments.map(emi => ({ ...emi, loanId: loan.id }))
@@ -530,7 +663,7 @@ $(function () {
 
         Swal.fire({
             title: 'Processing Payment...',
-            html: `Payment method: <strong>${method.toUpperCase()}</strong><br>Please wait...`,
+            html: `Payment method: <strong>${method.toUpperCase()}</strong><br>Amount: <strong>₹${Number(paymentAmount).toFixed(2)}</strong><br>Please wait...`,
             allowOutsideClick: false,
             didOpen: () => {
                 Swal.showLoading();
@@ -541,7 +674,8 @@ $(function () {
         setTimeout(() => {
             axios.post(emi.pay_url, { 
                 custom_penalty_amount: null,
-                payment_method: method 
+                payment_method: method,
+                payment_amount: paymentAmount
             })
             .then(({ data }) => {
                 Swal.fire({
@@ -620,7 +754,13 @@ $(function () {
                     <td>${statusBadge}</td>
                     <td>
                         ${payUrl ? `
-                            <button class="btn btn-sm btn-primary pay-now" 
+                            <button class="btn btn-sm btn-info send-reminder" 
+                                    data-emi-id="${emi.id}" 
+                                    data-emi-date="${reminder.due_date}" 
+                                    title="Send Email Reminder">
+                                <i class="bi bi-envelope"></i> Reminder
+                            </button>
+                            <button class="btn btn-sm btn-primary pay-now ms-1" 
                                     data-emi-id="${emi.id}" 
                                     data-emi-amount="${reminder.amount}" 
                                     data-emi-date="${reminder.due_date}">
@@ -708,6 +848,39 @@ $(function () {
         const modal = new bootstrap.Modal(document.getElementById('remindersModal'));
         modal.show();
     };
+
+    // Handle Send Reminder
+    $(document).on('click', '.send-reminder', function() {
+        const emiId = $(this).data('emi-id');
+        const emiDate = $(this).data('emi-date');
+        const btn = $(this);
+        const originalHtml = btn.html();
+        
+        // Disable button and show loading
+        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
+        
+        axios.post(`/loans/installments/${emiId}/reminder`)
+            .then(({ data }) => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Reminder Sent!',
+                    text: data.message || 'Email reminder sent successfully.',
+                    timer: 3000,
+                    showConfirmButton: false
+                });
+            })
+            .catch((error) => {
+                const message = error.response?.data?.message || 'Failed to send reminder email.';
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: message
+                });
+            })
+            .finally(() => {
+                btn.prop('disabled', false).html(originalHtml);
+            });
+    });
 
     // Handle Delete EMI (Admin only)
     $(document).on('click', '.delete-emi', function() {

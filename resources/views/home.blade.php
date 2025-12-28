@@ -38,8 +38,13 @@
             <div class="card-body">
                 @if($user->isAdmin())
                     <a href="{{ route('admin.dashboard') }}" class="btn btn-danger w-100 mb-2">Admin Dashboard</a>
+                    <button class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#adminLoanApplicationModal">Apply New Loan</button>
+                @else
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <small>You have read-only access. Contact admin to apply for loans.</small>
+                    </div>
                 @endif
-                <button class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#loanModal">Apply New Loan</button>
             </div>
         </div>
     </div>
@@ -105,7 +110,7 @@
                 <span>Your Loans</span>
                 <button class="btn btn-outline-primary btn-sm" id="refreshLoans">Refresh</button>
             </div>
-            <div class="card-body" id="loansContainer" data-is-admin="{{ $user->isAdmin() ? 'true' : 'false' }}">
+            <div class="card-body" id="loansContainer" data-is-admin="{{ $user->isAdmin() ? 'true' : 'false' }}" data-list-url="{{ route('loans.list') }}">
                 <p class="text-muted">Loading loans...</p>
             </div>
         </div>
@@ -122,7 +127,11 @@
     </div>
 </div>
 
-@include('partials.loan-modal')
+@if($user->isAdmin())
+    @include('admin.loan-application')
+@else
+    @include('partials.loan-modal')
+@endif
 
 <!-- Loan Details Modal -->
 <div class="modal fade" id="loanDetailsModal" tabindex="-1" aria-labelledby="loanDetailsModalLabel" aria-hidden="true">

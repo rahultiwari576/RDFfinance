@@ -37,6 +37,7 @@ Route::prefix('loans')->middleware('auth')->group(function () {
     Route::get('/', [LoanController::class, 'list'])->name('loans.list');
     Route::get('{loan}/installments', [LoanController::class, 'installments'])->name('loans.installments');
     Route::post('installments/{installment}/pay', [LoanController::class, 'markInstallmentPaid'])->name('loans.installments.pay');
+    Route::post('installments/{installment}/reminder', [LoanController::class, 'sendReminder'])->name('loans.installments.reminder');
     Route::delete('installments/{installment}', [LoanController::class, 'deleteInstallment'])->name('loans.installments.delete');
     Route::get('/reminders/list', [LoanController::class, 'reminders'])->name('loans.reminders');
     Route::delete('{loan}', [LoanController::class, 'delete'])->name('loans.delete');
@@ -54,6 +55,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/users/{user}/reminders', [AdminController::class, 'getUserReminders'])->name('admin.users.reminders');
     Route::get('/users/{user}/summary', [AdminController::class, 'getUserLoanSummary'])->name('admin.users.summary');
     Route::get('/loans', [AdminController::class, 'allLoans'])->name('admin.loans');
+    Route::post('/loans/apply', [AdminController::class, 'applyLoan'])->name('admin.loans.apply');
     Route::delete('/loans/{loan}', [AdminController::class, 'deleteLoan'])->name('admin.loans.delete');
     Route::post('/installments/customize', [AdminController::class, 'customizeEmiPayment'])->name('admin.installments.customize');
     Route::post('/installments/{installment}/customize', [AdminController::class, 'customizeEmiPayment'])->name('admin.installments.customize.id');

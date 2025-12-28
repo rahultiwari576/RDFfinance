@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\LoanApplicationMail;
 use App\Models\Loan;
 use App\Models\User;
 use App\Services\LoanService;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 
 class AdminController extends Controller
 {
@@ -243,6 +246,287 @@ class AdminController extends Controller
                 'status' => true,
                 'message' => 'Penalty amount updated successfully.',
             ]);
+        }
+    }
+
+    public function applyLoan(Request $request): JsonResponse
+    {
+        // This is a comprehensive loan application handler
+        // Validate all required fields
+        $validated = $request->validate([
+            // Customer details
+            'customer_type' => ['required', 'in:new,existing'],
+            'existing_user_id' => ['required_if:customer_type,existing', 'nullable', 'exists:users,id'],
+            'customer_first_name' => ['required_if:customer_type,new', 'nullable', 'string', 'max:255'],
+            'customer_last_name' => ['required_if:customer_type,new', 'nullable', 'string', 'max:255'],
+            'customer_password' => ['required_if:customer_type,new', 'nullable', 'string', 'min:6'],
+            'customer_aadhar_number' => ['required_if:customer_type,new', 'nullable', 'digits:12'],
+            'customer_mobile_number' => ['required_if:customer_type,new', 'nullable', 'regex:/^[0-9]{10}$/'],
+            'customer_alternative_mobile' => ['nullable', 'regex:/^[0-9]{10}$/'],
+            'customer_email' => ['required_if:customer_type,new', 'nullable', 'email', 'unique:users,email'],
+            'customer_pan_number' => ['required_if:customer_type,new', 'nullable', 'regex:/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/'],
+            'customer_address_type' => ['required_if:customer_type,new', 'nullable', 'in:RESIDENTIAL,PERMANENT,OFFICE'],
+            'customer_employment_type' => ['required_if:customer_type,new', 'nullable', 'in:self_employed,salaried'],
+            
+            // Guarantor
+            'guarantor_first_name' => ['required', 'string', 'max:255'],
+            'guarantor_last_name' => ['required', 'string', 'max:255'],
+            'guarantor_aadhar' => ['required', 'digits:12'],
+            'guarantor_pan' => ['required', 'regex:/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/'],
+            'guarantor_mobile' => ['required', 'regex:/^[0-9]{10}$/'],
+            
+            // Vehicle
+            'vehicle_type' => ['required', 'in:new,used'],
+            'vehicle_company_name' => ['required_if:vehicle_type,new', 'nullable', 'string'],
+            'vehicle_model_name' => ['required_if:vehicle_type,new', 'nullable', 'string'],
+            'used_vehicle_company' => ['required_if:vehicle_type,used', 'nullable', 'string'],
+            'used_vehicle_model' => ['required_if:vehicle_type,used', 'nullable', 'string'],
+            'engine_number' => ['required_if:vehicle_type,used', 'nullable', 'string'],
+            'chassis_number' => ['required_if:vehicle_type,used', 'nullable', 'string'],
+            'registration_number' => ['required_if:vehicle_type,used', 'nullable', 'string'],
+            'registration_date' => ['required_if:vehicle_type,used', 'nullable', 'date'],
+            'registration_validity' => ['required_if:vehicle_type,used', 'nullable', 'date'],
+            'owner_name' => ['required_if:vehicle_type,used', 'nullable', 'string'],
+            'vehicle_color' => ['required_if:vehicle_type,used', 'nullable', 'string'],
+            'rc_other_details' => ['nullable', 'string'],
+            
+            // Additional
+            'mobile_otp' => ['required', 'string'],
+            'office_address' => ['nullable', 'string'],
+            'reference1_name' => ['nullable', 'string'],
+            'reference1_mobile' => ['nullable', 'regex:/^[0-9]{10}$/'],
+            'reference1_address' => ['nullable', 'string'],
+            'reference2_name' => ['nullable', 'string'],
+            'reference2_mobile' => ['nullable', 'regex:/^[0-9]{10}$/'],
+            'reference2_address' => ['nullable', 'string'],
+            'cibil_score' => ['nullable', 'string'],
+            'cibil_details' => ['nullable', 'string'],
+            
+            // Sanction & Bank
+            'aadhar_otp' => ['required', 'string'],
+            'principal_amount' => ['required', 'numeric', 'min:1000'],
+            'interest_rate' => ['required', 'numeric', 'min:1'],
+            'tenure_months' => ['required', 'integer', 'min:1'],
+            'emi_count' => ['required', 'integer', 'min:1'],
+            'time_period' => ['nullable', 'string'],
+            'sanction_letter' => ['nullable', 'string'],
+            'bank_account_number' => ['required', 'string'],
+            'bank_account_name' => ['required', 'string'],
+            'bank_ifsc' => ['required', 'string'],
+            'bank_upi' => ['nullable', 'string'],
+            
+            // Documents
+            'tax_invoice' => ['required_if:vehicle_type,new', 'nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'rc_document' => ['required_if:vehicle_type,used', 'nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'insurance' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'delivery_photo' => ['required', 'file', 'mimes:jpg,jpeg,png', 'max:5120'],
+            'aadhar_card' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'pan_card' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'address_proof' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'rto_booklet' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'cheque_1' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'cheque_2' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'cheque_3' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'guarantor_aadhar_doc' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'guarantor_pan_doc' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'guarantor_cheque' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+        ]);
+
+        try {
+            \DB::beginTransaction();
+
+            // Create or get user
+            if ($validated['customer_type'] === 'new') {
+                $user = User::create([
+                    'name' => $validated['customer_first_name'] . ' ' . $validated['customer_last_name'],
+                    'first_name' => $validated['customer_first_name'],
+                    'last_name' => $validated['customer_last_name'],
+                    'email' => $validated['customer_email'],
+                    'password' => Hash::make($validated['customer_password']),
+                    'role' => 'user',
+                    'aadhar_number' => $validated['customer_aadhar_number'],
+                    'pan_number' => $validated['customer_pan_number'],
+                    'phone_number' => $validated['customer_mobile_number'],
+                    'alternative_phone_number' => $validated['customer_alternative_mobile'] ?? null,
+                    'address_type' => $validated['customer_address_type'],
+                    'employment_type' => $validated['customer_employment_type'],
+                    'age' => 25, // Default, can be updated later
+                ]);
+            } else {
+                // Get existing user - admin can apply loan for any user
+                $user = User::findOrFail($validated['existing_user_id']);
+                
+                // Ensure user is not an admin (optional check)
+                if ($user->isAdmin()) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Cannot apply loan for admin users.',
+                    ], 400);
+                }
+            }
+
+            // Calculate EMI
+            $principal = $validated['principal_amount'];
+            $rate = $validated['interest_rate'] / 100 / 12;
+            $tenure = $validated['tenure_months'];
+            $emi = ($principal * $rate * pow(1 + $rate, $tenure)) / (pow(1 + $rate, $tenure) - 1);
+            $totalRepayment = $emi * $tenure;
+
+            // Create loan
+            $loan = Loan::create([
+                'user_id' => $user->id,
+                'principal_amount' => $principal,
+                'interest_rate' => $validated['interest_rate'],
+                'tenure_months' => $tenure,
+                'emi_amount' => round($emi, 2),
+                'total_repayment' => round($totalRepayment, 2),
+                'status' => 'active',
+                'vehicle_type' => $validated['vehicle_type'],
+                'mobile_otp' => $validated['mobile_otp'],
+                'office_address' => $validated['office_address'] ?? null,
+                'aadhar_otp' => $validated['aadhar_otp'],
+                'cibil_score' => $validated['cibil_score'] ?? null,
+                'cibil_details' => $validated['cibil_details'] ?? null,
+                'sanction_letter' => $validated['sanction_letter'] ?? null,
+                'penalty_amount' => 590,
+                'max_penalty_applications' => 3,
+                'penalty_dates' => [10, 12, 15],
+            ]);
+
+            // Create guarantor
+            \App\Models\Guarantor::create([
+                'loan_id' => $loan->id,
+                'first_name' => $validated['guarantor_first_name'],
+                'last_name' => $validated['guarantor_last_name'],
+                'aadhar_number' => $validated['guarantor_aadhar'],
+                'pan_number' => $validated['guarantor_pan'],
+                'mobile_number' => $validated['guarantor_mobile'],
+            ]);
+
+            // Create vehicle details
+            $vehicleData = [
+                'loan_id' => $loan->id,
+                'vehicle_type' => $validated['vehicle_type'],
+            ];
+            
+            if ($validated['vehicle_type'] === 'new') {
+                $vehicleData['company_name'] = $validated['vehicle_company_name'];
+                $vehicleData['model_name'] = $validated['vehicle_model_name'];
+            } else {
+                $vehicleData['company_name'] = $validated['used_vehicle_company'];
+                $vehicleData['model_name'] = $validated['used_vehicle_model'];
+                $vehicleData['engine_number'] = $validated['engine_number'];
+                $vehicleData['chassis_number'] = $validated['chassis_number'];
+                $vehicleData['registration_number'] = $validated['registration_number'];
+                $vehicleData['registration_date'] = $validated['registration_date'];
+                $vehicleData['registration_validity'] = $validated['registration_validity'];
+                $vehicleData['owner_name'] = $validated['owner_name'];
+                $vehicleData['vehicle_color'] = $validated['vehicle_color'];
+                $vehicleData['rc_other_details'] = $validated['rc_other_details'] ?? null;
+            }
+            
+            \App\Models\VehicleDetail::create($vehicleData);
+
+            // Create references (optional)
+            if (!empty($validated['reference1_name']) || !empty($validated['reference1_mobile']) || !empty($validated['reference1_address'])) {
+                \App\Models\Reference::create([
+                    'loan_id' => $loan->id,
+                    'name' => $validated['reference1_name'] ?? '',
+                    'mobile_number' => $validated['reference1_mobile'] ?? '',
+                    'address' => $validated['reference1_address'] ?? '',
+                    'reference_number' => 1,
+                ]);
+            }
+            
+            if (!empty($validated['reference2_name']) || !empty($validated['reference2_mobile']) || !empty($validated['reference2_address'])) {
+                \App\Models\Reference::create([
+                    'loan_id' => $loan->id,
+                    'name' => $validated['reference2_name'] ?? '',
+                    'mobile_number' => $validated['reference2_mobile'] ?? '',
+                    'address' => $validated['reference2_address'] ?? '',
+                    'reference_number' => 2,
+                ]);
+            }
+
+            // Create bank details
+            \App\Models\BankDetail::create([
+                'loan_id' => $loan->id,
+                'account_number' => $validated['bank_account_number'],
+                'account_holder_name' => $validated['bank_account_name'],
+                'ifsc_code' => $validated['bank_ifsc'],
+                'upi_id' => $validated['bank_upi'] ?? null,
+            ]);
+
+            // Upload documents
+            $documentTypes = [
+                'tax_invoice' => 'tax_invoice',
+                'rc_document' => 'rc_document',
+                'insurance' => 'insurance',
+                'delivery_photo' => 'delivery_photo',
+                'aadhar_card' => 'aadhar_card',
+                'pan_card' => 'pan_card',
+                'address_proof' => 'address_proof',
+                'rto_booklet' => 'rto_booklet',
+                'cheque_1' => 'cheque_1',
+                'cheque_2' => 'cheque_2',
+                'cheque_3' => 'cheque_3',
+                'guarantor_aadhar_doc' => 'guarantor_aadhar',
+                'guarantor_pan_doc' => 'guarantor_pan',
+                'guarantor_cheque' => 'guarantor_cheque',
+            ];
+
+            foreach ($documentTypes as $field => $docType) {
+                if ($request->hasFile($field)) {
+                    $file = $request->file($field);
+                    $path = $file->store("loans/{$loan->id}/documents", 'public');
+                    
+                    \App\Models\LoanDocument::create([
+                        'loan_id' => $loan->id,
+                        'document_type' => $docType,
+                        'file_path' => $path,
+                        'original_filename' => $file->getClientOriginalName(),
+                    ]);
+                }
+            }
+
+            // Generate installments
+            $calculation = $this->loanService->calculateEmi([
+                'principal_amount' => $principal,
+                'interest_rate' => $validated['interest_rate'],
+                'tenure_months' => $tenure,
+            ]);
+            $this->loanService->createInstallments($loan, $calculation['schedule'], 590);
+            
+            // Update loan with next_due_date
+            $firstInstallment = $loan->installments()->orderBy('due_date')->first();
+            if ($firstInstallment) {
+                $loan->update(['next_due_date' => $firstInstallment->due_date]);
+            }
+
+            \DB::commit();
+
+            // Send email notification
+            try {
+                // Reload loan with all relationships
+                $loan->load(['user', 'bankDetail', 'guarantor', 'installments']);
+                Mail::to($user->email)->send(new LoanApplicationMail($loan));
+            } catch (\Exception $e) {
+                // Log email error but don't fail the request
+                \Log::error('Failed to send loan application email: ' . $e->getMessage());
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Loan application submitted successfully.',
+                'loan' => $loan,
+            ], 201);
+
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to submit loan application: ' . $e->getMessage(),
+            ], 500);
         }
     }
 }

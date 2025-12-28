@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\LoanApplicationRequest;
+use App\Mail\InstallmentReminderMail;
 use App\Models\LoanInstallment;
 use App\Services\LoanService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class LoanController extends Controller
 {
@@ -18,6 +20,14 @@ class LoanController extends Controller
 
     public function apply(LoanApplicationRequest $request): JsonResponse
     {
+        // Only admin can apply loans
+        if (!Auth::user()->isAdmin()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized. Only administrators can apply for loans.',
+            ], 403);
+        }
+
         $loan = $this->loanService->createLoan(Auth::user(), $request->validated());
 
         return response()->json([
@@ -55,9 +65,15 @@ class LoanController extends Controller
 
         $data = $request->validate([
             'custom_penalty_amount' => ['nullable', 'numeric', 'min:0'],
+            'payment_amount' => ['nullable', 'numeric', 'min:0'],
+            'payment_method' => ['nullable', 'string'],
         ]);
 
-        $this->loanService->markInstallmentPaid($installment, $data['custom_penalty_amount'] ?? null);
+        $this->loanService->markInstallmentPaid(
+            $installment, 
+            $data['custom_penalty_amount'] ?? null,
+            $data['payment_amount'] ?? null
+        );
 
         return response()->json([
             'status' => true,
@@ -126,6 +142,41 @@ class LoanController extends Controller
             'status' => true,
             'message' => 'EMI deleted successfully. Remaining balance updated.',
         ]);
+    }
+
+    public function sendReminder(LoanInstallment $installment): JsonResponse
+    {
+        // Check if user owns the loan or is admin
+        if ($installment->loan->user_id !== Auth::id() && !Auth::user()->isAdmin()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized.',
+            ], 403);
+        }
+
+        // Check if installment is already paid
+        if ($installment->status === 'paid') {
+            return response()->json([
+                'status' => false,
+                'message' => 'Cannot send reminder for a paid installment.',
+            ], 400);
+        }
+
+        try {
+            // Send reminder email
+            Mail::to($installment->loan->user->email)
+                ->send(new InstallmentReminderMail($installment));
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Reminder email sent successfully to ' . $installment->loan->user->email,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to send reminder email: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }
 

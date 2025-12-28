@@ -92,6 +92,7 @@
                                 <th>Email</th>
                                 <th class="text-center" style="width: 100px;">Role</th>
                                 <th class="text-center" style="width: 80px;">Loans</th>
+                                <th class="text-center" style="width: 120px;">Loan Application</th>
                                 <th class="text-center" style="width: 150px;">Actions</th>
                             </tr>
                         </thead>
@@ -103,6 +104,15 @@
                                 <td>{{ $user->email }}</td>
                                 <td class="text-center"><span class="badge bg-{{ $user->isAdmin() ? 'danger' : 'primary' }}">{{ ucfirst($user->role) }}</span></td>
                                 <td class="text-center">{{ $user->loans_count }}</td>
+                                <td class="text-center">
+                                    @if(!$user->isAdmin())
+                                        <button class="btn btn-sm btn-success apply-loan-user" data-user-id="{{ $user->id }}" data-user-name="{{ $user->name }}" data-user-email="{{ $user->email }}" title="Apply Loan">
+                                            <i class="bi bi-bank me-1"></i>Apply Loan
+                                        </button>
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
                                 <td class="text-center">
                                     <div class="btn-group btn-group-sm" role="group">
                                         <button class="btn btn-info view-user" data-user-id="{{ $user->id }}" title="View Details">
@@ -121,7 +131,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="6" class="text-center text-muted py-4">No users found.</td>
+                                <td colspan="7" class="text-center text-muted py-4">No users found.</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -429,6 +439,8 @@
         </div>
     </div>
 </div>
+
+@include('admin.loan-application')
 @endsection
 
 @push('scripts')
@@ -860,6 +872,33 @@ $(function() {
     // Add smooth scroll to tables
     $('.table-responsive').on('scroll', function() {
         $(this).addClass('scrolling');
+    });
+    
+    // Handle "Apply Loan" button from users table
+    $(document).on('click', '.apply-loan-user', function() {
+        const userId = $(this).data('user-id');
+        const userName = $(this).data('user-name');
+        const userEmail = $(this).data('user-email');
+        
+        // Open the loan application modal
+        $('#adminLoanApplicationModal').modal('show');
+        
+        // Set to existing customer
+        $('#existingCustomer').prop('checked', true).trigger('change');
+        
+        // Wait for users to load, then select the user
+        setTimeout(() => {
+            $('#existingUserId').val(userId).trigger('change');
+            
+            // Show a message
+            Swal.fire({
+                icon: 'info',
+                title: 'User Selected',
+                text: `Applying loan for ${userName}`,
+                timer: 2000,
+                showConfirmButton: false
+            });
+        }, 500);
     });
 });
 </script>

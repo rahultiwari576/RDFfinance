@@ -14,10 +14,16 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name',
+        'first_name',
+        'middle_name',
+        'last_name',
         'email',
         'password',
         'role',
         'aadhar_number',
+        'alternative_phone_number',
+        'address_type',
+        'employment_type',
         'pan_number',
         'phone_number',
         'age',
@@ -31,6 +37,7 @@ class User extends Authenticatable
         'additional_info',
         'aadhar_document_path',
         'pan_document_path',
+        'driving_license_path',
     ];
 
     protected $hidden = [
