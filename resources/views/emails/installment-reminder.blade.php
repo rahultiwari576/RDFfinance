@@ -96,7 +96,7 @@
 <body>
     <div class="header">
         <h1>EMI Payment Reminder</h1>
-        <p>LaraFinance - Loan Management System</p>
+        <p>RDFFinance - Loan Management System</p>
     </div>
     
     <div class="content">
@@ -185,8 +185,8 @@
         </p>
         
         <div class="footer">
-            <p>This is an automated reminder from LaraFinance.</p>
-            <p>© {{ date('Y') }} LaraFinance. All rights reserved.</p>
+            <p>This is an automated reminder from RDFFinance.</p>
+            <p>© {{ date('Y') }} RDFFinance. All rights reserved.</p>
         </div>
     </div>
 </body>

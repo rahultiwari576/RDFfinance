@@ -38,6 +38,145 @@ $(function() {
         // Ensure guarantor section is always visible
         $('#guarantorSection').removeClass('d-none');
         $('#customerFieldsRow').removeClass('d-none');
+        
+        // Check for saved draft
+        checkForSavedDraft();
+    });
+    
+    // Function to check and load saved draft
+    function checkForSavedDraft() {
+        const userId = $('#existingUserId').val() || null;
+        if (!userId && $('input[name="customer_type"]:checked').val() === 'new') {
+            // For new customers, check by email if available
+            const email = $('#customerEmail').val();
+            if (!email) return;
+        }
+        
+        axios.get('/admin/loans/draft/load', {
+            params: { user_id: userId }
+        })
+        .then(({ data }) => {
+            if (data.status && data.draft) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Saved Draft Found',
+                    html: `A saved draft from ${new Date(data.draft.saved_at).toLocaleString()} was found.<br>Would you like to load it?`,
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, Load Draft',
+                    cancelButtonText: 'Start Fresh',
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#6c757d'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        loadDraftData(data.draft);
+                    }
+                });
+            }
+        })
+        .catch(() => {
+            // No draft found or error - continue normally
+        });
+    }
+    
+    // Function to load draft data into form
+    function loadDraftData(draft) {
+        const formData = draft.form_data;
+        
+        // Load customer type
+        if (formData.customer_type) {
+            $(`input[name="customer_type"][value="${formData.customer_type}"]`).prop('checked', true).trigger('change');
+        }
+        
+        // Load existing user if applicable
+        if (formData.existing_user_id) {
+            setTimeout(() => {
+                $('#existingUserId').val(formData.existing_user_id).trigger('change');
+            }, 500);
+        }
+        
+        // Load all form fields
+        Object.keys(formData).forEach(key => {
+            const field = $(`[name="${key}"]`);
+            if (field.length) {
+                if (field.is(':radio') || field.is(':checkbox')) {
+                    field.filter(`[value="${formData[key]}"]`).prop('checked', true);
+                } else if (field.is('select')) {
+                    field.val(formData[key]).trigger('change');
+                } else {
+                    field.val(formData[key]);
+                }
+            }
+        });
+        
+        // Navigate to saved step
+        if (draft.current_step) {
+            currentStep = draft.current_step;
+            showStep(currentStep);
+        }
+        
+        Swal.fire({
+            icon: 'success',
+            title: 'Draft Loaded',
+            text: 'Your saved draft has been loaded. You can continue from where you left off.',
+            timer: 2000
+        });
+    }
+    
+    // Save draft functionality
+    function saveDraft(step) {
+        const formData = new FormData(form[0]);
+        formData.append('current_step', step);
+        
+        // Convert FormData to object (excluding files for now)
+        const data = {};
+        for (let [key, value] of formData.entries()) {
+            if (!(value instanceof File)) {
+                data[key] = value;
+            }
+        }
+        
+        axios.post('/admin/loans/draft/save', data)
+        .then(({ data }) => {
+            if (data.status) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Draft Saved',
+                    text: 'Your progress has been saved. You can continue later.',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            }
+        })
+        .catch((error) => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Save Failed',
+                text: error.response?.data?.message || 'Failed to save draft.'
+            });
+        });
+    }
+    
+    // Save draft buttons
+    $('#saveDraftStep1').on('click', function() {
+        if (validateStep1()) {
+            saveDraft(1);
+        }
+    });
+    
+    $('#saveDraftStep2').on('click', function() {
+        if (validateStep2()) {
+            saveDraft(2);
+        }
+    });
+    
+    $('#saveDraftStep3').on('click', function() {
+        if (validateStep3()) {
+            saveDraft(3);
+        }
+    });
+    
+    $('#saveDraftStep4').on('click', function() {
+        saveDraft(4);
     });
     
     // Load users when modal opens if existing customer is selected
@@ -330,6 +469,14 @@ $(function() {
                 text: data.message || 'Loan application submitted successfully.',
                 timer: 3000
             }).then(() => {
+                // Delete draft after successful submission
+                const userId = $('#existingUserId').val() || null;
+                if (userId) {
+                    axios.delete('/admin/loans/draft/delete', {
+                        params: { user_id: userId }
+                    }).catch(() => {});
+                }
+                
                 $('#adminLoanApplicationModal').modal('hide');
                 form[0].reset();
                 currentStep = 1;

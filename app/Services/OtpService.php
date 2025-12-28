@@ -71,9 +71,9 @@ class OtpService
 
     protected function sendOtpMail(User $user, string $code): void
     {
-        $subject = 'Your LaraFinance OTP';
-        $body = "Dear {$user->name},\n\nYour OTP for LaraFinance login is {$code}.\nThis code expires in " .
-            env('OTP_EXPIRY_MINUTES', 10) . " minutes.\n\nRegards,\nLaraFinance Team";
+        $subject = 'Your RDFFinance OTP';
+        $body = "Dear {$user->name},\n\nYour OTP for RDFFinance login is {$code}.\nThis code expires in " .
+            env('OTP_EXPIRY_MINUTES', 10) . " minutes.\n\nRegards,\nRDFFinance Team";
 
         Mail::raw($body, function ($message) use ($user, $subject) {
             $message->to($user->email)

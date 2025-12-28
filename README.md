@@ -1,6 +1,6 @@
-# LaraFinance
+# RDFFinance
 
-LaraFinance is a Laravel 8.1 application that provides secure authentication, OTP-based Aadhar login, document-aware registration, and rich loan servicing workflows with smart EMI tools.
+RDFFinance is a Laravel 8.1 application that provides secure authentication, OTP-based Aadhar login, document-aware registration, and rich loan servicing workflows with smart EMI tools.
 
 ## Features
 
@@ -84,5 +84,5 @@ SMTP defaults are provided in `.env.example`. For production configure your own 
 - Large Aadhar files may take longer to parse; make sure PHP max upload size exceeds 5MB if needed.
 - SweetAlert is used for all AJAX responses; gracefully handle errors by inspecting browser console logs.
 
-Enjoy building with LaraFinance!
+Enjoy building with RDFFinance!
 

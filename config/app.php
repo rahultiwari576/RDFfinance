@@ -2,7 +2,7 @@
 
 return [
 
-    'name' => env('APP_NAME', 'LaraFinance'),
+    'name' => env('APP_NAME', 'RDFFinance'),
 
     'env' => env('APP_ENV', 'production'),
 

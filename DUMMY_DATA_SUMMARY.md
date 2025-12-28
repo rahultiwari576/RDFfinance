@@ -2,7 +2,7 @@
 
 ## Database Population Complete! ✅
 
-The database has been successfully populated with comprehensive dummy data for testing the LaraFinance application.
+The database has been successfully populated with comprehensive dummy data for testing the RDFFinance application.
 
 ## Data Overview
 

@@ -12,7 +12,7 @@
                     <i class="bi bi-person-plus"></i>
                 </div>
                 <h2 class="auth-title">Create Account</h2>
-                <p class="auth-subtitle">Join LaraFinance and start your financial journey</p>
+                <p class="auth-subtitle">Join RDFFinance and start your financial journey</p>
             </div>
 
             <!-- Progress Steps -->

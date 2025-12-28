@@ -31,7 +31,7 @@ return [
         ],
     ],
 
-    'prefix' => env('CACHE_PREFIX', 'larafinance_cache'),
+    'prefix' => env('CACHE_PREFIX', 'RDFFinance_cache'),
 
 ];
 

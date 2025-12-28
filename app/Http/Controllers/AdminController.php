@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Mail\LoanApplicationMail;
 use App\Models\Loan;
+use App\Models\LoanDraft;
 use App\Models\User;
 use App\Services\LoanService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 
@@ -526,6 +528,99 @@ class AdminController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Failed to submit loan application: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function saveLoanDraft(Request $request): JsonResponse
+    {
+        try {
+            $formData = $request->except(['_token', 'files']);
+            $currentStep = $request->input('current_step', 1);
+            $userId = $request->input('existing_user_id') ?? $request->input('user_id');
+            
+            // Get or create draft
+            $draft = LoanDraft::updateOrCreate(
+                [
+                    'admin_id' => Auth::id(),
+                    'user_id' => $userId,
+                ],
+                [
+                    'existing_user_id' => $request->input('existing_user_id'),
+                    'form_data' => $formData,
+                    'current_step' => $currentStep,
+                ]
+            );
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Draft saved successfully.',
+                'draft_id' => $draft->id,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to save draft: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function loadLoanDraft(Request $request): JsonResponse
+    {
+        try {
+            $userId = $request->input('user_id');
+            
+            $draft = LoanDraft::where('admin_id', Auth::id())
+                ->where(function($query) use ($userId) {
+                    $query->where('user_id', $userId)
+                          ->orWhere('existing_user_id', $userId);
+                })
+                ->latest()
+                ->first();
+
+            if (!$draft) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'No draft found.',
+                ]);
+            }
+
+            return response()->json([
+                'status' => true,
+                'draft' => [
+                    'form_data' => $draft->form_data,
+                    'current_step' => $draft->current_step,
+                    'saved_at' => $draft->updated_at->format('Y-m-d H:i:s'),
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to load draft: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function deleteLoanDraft(Request $request): JsonResponse
+    {
+        try {
+            $userId = $request->input('user_id');
+            
+            LoanDraft::where('admin_id', Auth::id())
+                ->where(function($query) use ($userId) {
+                    $query->where('user_id', $userId)
+                          ->orWhere('existing_user_id', $userId);
+                })
+                ->delete();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Draft deleted successfully.',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to delete draft: ' . $e->getMessage(),
             ], 500);
         }
     }

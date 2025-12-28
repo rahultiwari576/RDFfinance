@@ -12,7 +12,7 @@
                     <i class="bi bi-shield-lock"></i>
                 </div>
                 <h2 class="auth-title">Welcome Back</h2>
-                <p class="auth-subtitle">Sign in to continue to LaraFinance</p>
+                <p class="auth-subtitle">Sign in to continue to RDFFinance</p>
             </div>
 
             <!-- Tabs -->

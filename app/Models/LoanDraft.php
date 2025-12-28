@@ -1,0 +1,33 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class LoanDraft extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'user_id',
+        'admin_id',
+        'existing_user_id',
+        'form_data',
+        'current_step',
+    ];
+
+    protected $casts = [
+        'form_data' => 'array',
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function admin()
+    {
+        return $this->belongsTo(User::class, 'admin_id');
+    }
+}

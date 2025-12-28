@@ -141,7 +141,10 @@
                             </div>
                         </div>
 
-                        <div class="form-actions mt-4">
+                        <div class="form-actions mt-4 d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-secondary" id="saveDraftStep1">
+                                <i class="bi bi-save me-2"></i>Save Draft
+                            </button>
                             <button type="button" class="btn btn-primary" id="nextToStep2">Next <i class="bi bi-arrow-right ms-2"></i></button>
                         </div>
                     </div>
@@ -281,10 +284,15 @@
                             </div>
                         </div>
 
-                        <div class="form-actions mt-4">
-                            <button type="button" class="btn btn-outline-secondary" id="prevToStep1">
-                                <i class="bi bi-arrow-left me-2"></i>Previous
-                            </button>
+                        <div class="form-actions mt-4 d-flex justify-content-between">
+                            <div>
+                                <button type="button" class="btn btn-outline-secondary" id="prevToStep1">
+                                    <i class="bi bi-arrow-left me-2"></i>Previous
+                                </button>
+                                <button type="button" class="btn btn-outline-info ms-2" id="saveDraftStep2">
+                                    <i class="bi bi-save me-2"></i>Save Draft
+                                </button>
+                            </div>
                             <button type="button" class="btn btn-primary" id="nextToStep3">Next <i class="bi bi-arrow-right ms-2"></i></button>
                         </div>
                     </div>
@@ -369,10 +377,15 @@
                             </div>
                         </div>
 
-                        <div class="form-actions mt-4">
-                            <button type="button" class="btn btn-outline-secondary" id="prevToStep2">
-                                <i class="bi bi-arrow-left me-2"></i>Previous
-                            </button>
+                        <div class="form-actions mt-4 d-flex justify-content-between">
+                            <div>
+                                <button type="button" class="btn btn-outline-secondary" id="prevToStep2">
+                                    <i class="bi bi-arrow-left me-2"></i>Previous
+                                </button>
+                                <button type="button" class="btn btn-outline-info ms-2" id="saveDraftStep3">
+                                    <i class="bi bi-save me-2"></i>Save Draft
+                                </button>
+                            </div>
                             <button type="button" class="btn btn-primary" id="nextToStep4">Next <i class="bi bi-arrow-right ms-2"></i></button>
                         </div>
                     </div>
@@ -461,10 +474,15 @@
                             </div>
                         </div>
 
-                        <div class="form-actions mt-4">
-                            <button type="button" class="btn btn-outline-secondary" id="prevToStep3">
-                                <i class="bi bi-arrow-left me-2"></i>Previous
-                            </button>
+                        <div class="form-actions mt-4 d-flex justify-content-between">
+                            <div>
+                                <button type="button" class="btn btn-outline-secondary" id="prevToStep3">
+                                    <i class="bi bi-arrow-left me-2"></i>Previous
+                                </button>
+                                <button type="button" class="btn btn-outline-info ms-2" id="saveDraftStep4">
+                                    <i class="bi bi-save me-2"></i>Save Draft
+                                </button>
+                            </div>
                             <button type="submit" class="btn btn-success btn-lg" id="submitLoanApplication">
                                 <i class="bi bi-check-circle me-2"></i>Submit Application
                             </button>
