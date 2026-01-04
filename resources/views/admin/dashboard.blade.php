@@ -204,13 +204,51 @@
                 <div class="modal-body">
                     <input type="hidden" id="edit_user_id" name="user_id">
                     <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="edit_first_name" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="edit_first_name" name="first_name" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="edit_middle_name" class="form-label">Middle Name</label>
+                            <input type="text" class="form-control" id="edit_middle_name" name="middle_name">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="edit_last_name" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="edit_last_name" name="last_name" required>
+                        </div>
+                    </div>
+                    <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="edit_name" class="form-label">Name</label>
+                            <label for="edit_name" class="form-label">Display Name</label>
                             <input type="text" class="form-control" id="edit_name" name="name" required>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="edit_email" class="form-label">Email</label>
                             <input type="email" class="form-control" id="edit_email" name="email" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_mother_name" class="form-label">Mother's Name</label>
+                            <input type="text" class="form-control" id="edit_mother_name" name="mother_name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_father_name" class="form-label">Father's Name</label>
+                            <input type="text" class="form-control" id="edit_father_name" name="father_name" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_gender" class="form-label">Gender</label>
+                            <select class="form-select" id="edit_gender" name="gender" required>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_dob" class="form-label">Date of Birth</label>
+                            <input type="date" class="form-control" id="edit_dob" name="dob" required>
                         </div>
                     </div>
                     <div class="row">
@@ -313,13 +351,51 @@
             <form id="createUserForm">
                 <div class="modal-body">
                     <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="create_first_name" class="form-label">First Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="create_first_name" name="first_name" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="create_middle_name" class="form-label">Middle Name</label>
+                            <input type="text" class="form-control" id="create_middle_name" name="middle_name">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="create_last_name" class="form-label">Last Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="create_last_name" name="last_name" required>
+                        </div>
+                    </div>
+                    <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="create_name" class="form-label">Name <span class="text-danger">*</span></label>
+                            <label for="create_name" class="form-label">Display Name <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="create_name" name="name" required>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="create_email" class="form-label">Email <span class="text-danger">*</span></label>
                             <input type="email" class="form-control" id="create_email" name="email" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="create_mother_name" class="form-label">Mother's Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="create_mother_name" name="mother_name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="create_father_name" class="form-label">Father's Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="create_father_name" name="father_name" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="create_gender" class="form-label">Gender <span class="text-danger">*</span></label>
+                            <select class="form-select" id="create_gender" name="gender" required>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="create_dob" class="form-label">Date of Birth <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="create_dob" name="dob" required>
                         </div>
                     </div>
                     <div class="row">
@@ -550,6 +626,27 @@ $(function() {
                         </div>
                         <div class="col-md-6 mb-3">
                             <strong>Email:</strong> ${user.email}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>First Name:</strong> ${user.first_name || 'N/A'}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Middle Name:</strong> ${user.middle_name || 'N/A'}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <strong>Last Name:</strong> ${user.last_name || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Mother's Name:</strong> ${user.mother_name || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Father's Name:</strong> ${user.father_name || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Gender:</strong> ${user.gender || 'N/A'}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>DOB:</strong> ${user.dob || 'N/A'}
                         </div>
                         <div class="col-md-6 mb-3">
                             <strong>Role:</strong> <span class="badge bg-${user.role === 'admin' ? 'danger' : 'primary'}">${user.role}</span>
@@ -801,6 +898,18 @@ $(function() {
         });
     });
 
+    // Auto-generate name from first, middle, last names
+    const updateDisplayName = (prefix) => {
+        const first = $(`#${prefix}_first_name`).val() || '';
+        const middle = $(`#${prefix}_middle_name`).val() || '';
+        const last = $(`#${prefix}_last_name`).val() || '';
+        const full = [first, middle, last].filter(Boolean).join(' ');
+        $(`#${prefix}_name`).val(full);
+    };
+
+    $('#create_first_name, #create_middle_name, #create_last_name').on('input', () => updateDisplayName('create'));
+    $('#edit_first_name, #edit_middle_name, #edit_last_name').on('input', () => updateDisplayName('edit'));
+
     // Edit User
     $('.edit-user').on('click', function() {
         const userId = $(this).data('user-id');
@@ -809,8 +918,15 @@ $(function() {
             .then(({ data }) => {
                 const user = data.user;
                 $('#edit_user_id').val(user.id);
+                $('#edit_first_name').val(user.first_name || '');
+                $('#edit_middle_name').val(user.middle_name || '');
+                $('#edit_last_name').val(user.last_name || '');
                 $('#edit_name').val(user.name);
                 $('#edit_email').val(user.email);
+                $('#edit_mother_name').val(user.mother_name || '');
+                $('#edit_father_name').val(user.father_name || '');
+                $('#edit_gender').val(user.gender || 'male');
+                $('#edit_dob').val(user.dob || '');
                 $('#edit_role').val(user.role);
                 $('#edit_phone_number').val(user.phone_number || '');
                 $('#edit_aadhar_number').val(user.aadhar_number || '');

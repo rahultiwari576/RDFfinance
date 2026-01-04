@@ -15,6 +15,8 @@ class VehicleDetail extends Model
         'vehicle_type',
         'company_name',
         'model_name',
+        'dealer_name',
+        'dealer_mobile',
         'engine_number',
         'chassis_number',
         'registration_number',

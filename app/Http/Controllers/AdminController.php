@@ -57,6 +57,13 @@ class AdminController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'first_name' => ['required', 'string', 'max:255'],
+            'middle_name' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
+            'mother_name' => ['required', 'string', 'max:255'],
+            'father_name' => ['required', 'string', 'max:255'],
+            'gender' => ['required', 'in:male,female,other'],
+            'dob' => ['required', 'date'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:6'],
             'role' => ['required', 'in:admin,user'],
@@ -77,6 +84,13 @@ class AdminController extends Controller
 
         $user = User::create([
             'name' => $validated['name'],
+            'first_name' => $validated['first_name'],
+            'middle_name' => $validated['middle_name'] ?? null,
+            'last_name' => $validated['last_name'],
+            'mother_name' => $validated['mother_name'],
+            'father_name' => $validated['father_name'],
+            'gender' => $validated['gender'],
+            'dob' => $validated['dob'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'role' => $validated['role'],
@@ -112,6 +126,13 @@ class AdminController extends Controller
 
         $validated = $request->validate([
             'name' => ['sometimes', 'string', 'max:255'],
+            'first_name' => ['sometimes', 'string', 'max:255'],
+            'middle_name' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'last_name' => ['sometimes', 'string', 'max:255'],
+            'mother_name' => ['sometimes', 'string', 'max:255'],
+            'father_name' => ['sometimes', 'string', 'max:255'],
+            'gender' => ['sometimes', 'in:male,female,other'],
+            'dob' => ['sometimes', 'date'],
             'email' => ['sometimes', 'email', 'max:255', 'unique:users,email,' . $userId],
             'password' => ['sometimes', 'nullable', 'string', 'min:6'],
             'role' => ['sometimes', 'in:admin,user'],
@@ -127,6 +148,7 @@ class AdminController extends Controller
             'pincode' => ['sometimes', 'string', 'digits:6'],
             'profession' => ['sometimes', 'nullable', 'string', 'max:255'],
             'education' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'additional_info' => ['sometimes', 'nullable', 'string'],
             'additional_info' => ['sometimes', 'nullable', 'string'],
         ]);
 
@@ -275,7 +297,12 @@ class AdminController extends Controller
             'customer_type' => ['required', 'in:new,existing'],
             'existing_user_id' => ['required_if:customer_type,existing', 'nullable', 'exists:users,id'],
             'customer_first_name' => ['required', 'string', 'max:255'],
+            'customer_middle_name' => ['sometimes', 'nullable', 'string', 'max:255'],
             'customer_last_name' => ['required', 'string', 'max:255'],
+            'customer_mother_name' => ['required', 'string', 'max:255'],
+            'customer_father_name' => ['required', 'string', 'max:255'],
+            'customer_gender' => ['required', 'in:male,female,other'],
+            'customer_dob' => ['required', 'date'],
             'customer_password' => ['required_if:customer_type,new', 'nullable', 'string', 'min:6'],
             'customer_aadhar_number' => ['required', 'digits:12', 'unique:users,aadhar_number,' . $request->input('existing_user_id')],
             'customer_mobile_number' => ['required', 'regex:/^[0-9]{10}$/'],
@@ -301,6 +328,8 @@ class AdminController extends Controller
             'vehicle_type' => ['required', 'in:new,used'],
             'vehicle_company_name' => ['required_if:vehicle_type,new', 'nullable', 'string'],
             'vehicle_model_name' => ['required_if:vehicle_type,new', 'nullable', 'string'],
+            'dealer_name' => ['required', 'string', 'max:255'],
+            'dealer_mobile' => ['required', 'regex:/^[0-9]{10}$/'],
             'used_vehicle_company' => ['required_if:vehicle_type,used', 'nullable', 'string'],
             'used_vehicle_model' => ['required_if:vehicle_type,used', 'nullable', 'string'],
             'engine_number' => ['required_if:vehicle_type,used', 'nullable', 'string'],
@@ -360,9 +389,14 @@ class AdminController extends Controller
             // Create or get user
             if ($validated['customer_type'] === 'new') {
                 $user = User::create([
-                    'name' => $validated['customer_first_name'] . ' ' . $validated['customer_last_name'],
+                    'name' => $validated['customer_first_name'] . ' ' . ($validated['customer_middle_name'] ? $validated['customer_middle_name'] . ' ' : '') . $validated['customer_last_name'],
                     'first_name' => $validated['customer_first_name'],
+                    'middle_name' => $validated['customer_middle_name'] ?? null,
                     'last_name' => $validated['customer_last_name'],
+                    'mother_name' => $validated['customer_mother_name'],
+                    'father_name' => $validated['customer_father_name'],
+                    'gender' => $validated['customer_gender'],
+                    'dob' => $validated['customer_dob'],
                     'email' => $validated['customer_email'],
                     'password' => Hash::make($validated['customer_password']),
                     'role' => 'user',
@@ -377,7 +411,7 @@ class AdminController extends Controller
                     'state' => $validated['customer_state'],
                     'zip_code' => $validated['customer_pincode'],
                     'employment_type' => $validated['customer_employment_type'],
-                    'age' => 25, // Default, can be updated later
+                    'age' => Carbon::parse($validated['customer_dob'])->age,
                 ]);
             } else {
                 // Get existing user - admin can apply loan for any user
@@ -393,9 +427,14 @@ class AdminController extends Controller
 
                 // Update existing user with potentially changed data
                 $user->update([
-                    'name' => $validated['customer_first_name'] . ' ' . $validated['customer_last_name'],
+                    'name' => $validated['customer_first_name'] . ' ' . ($validated['customer_middle_name'] ? $validated['customer_middle_name'] . ' ' : '') . $validated['customer_last_name'],
                     'first_name' => $validated['customer_first_name'],
+                    'middle_name' => $validated['customer_middle_name'] ?? null,
                     'last_name' => $validated['customer_last_name'],
+                    'mother_name' => $validated['customer_mother_name'],
+                    'father_name' => $validated['customer_father_name'],
+                    'gender' => $validated['customer_gender'],
+                    'dob' => $validated['customer_dob'],
                     'email' => $validated['customer_email'],
                     'aadhar_number' => $validated['customer_aadhar_number'],
                     'pan_number' => $validated['customer_pan_number'],
@@ -408,6 +447,7 @@ class AdminController extends Controller
                     'state' => $validated['customer_state'],
                     'zip_code' => $validated['customer_pincode'],
                     'employment_type' => $validated['customer_employment_type'],
+                    'age' => Carbon::parse($validated['customer_dob'])->age,
                 ]);
             }
 
@@ -477,6 +517,8 @@ class AdminController extends Controller
             $vehicleData = [
                 'loan_id' => $loan->id,
                 'vehicle_type' => $validated['vehicle_type'],
+                'dealer_name' => $validated['dealer_name'],
+                'dealer_mobile' => $validated['dealer_mobile'],
             ];
             
             if ($validated['vehicle_type'] === 'new') {

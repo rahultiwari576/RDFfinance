@@ -62,13 +62,37 @@
                         </h5>
                         
                         <div class="row g-3" id="customerFieldsRow">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label class="form-label">First Name <span class="text-danger">*</span></label>
                                 <input type="text" name="customer_first_name" id="customerFirstName" class="form-control" required>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
+                                <label class="form-label">Middle Name</label>
+                                <input type="text" name="customer_middle_name" id="customerMiddleName" class="form-control">
+                            </div>
+                            <div class="col-md-4">
                                 <label class="form-label">Last Name <span class="text-danger">*</span></label>
                                 <input type="text" name="customer_last_name" id="customerLastName" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Mother's Name <span class="text-danger">*</span></label>
+                                <input type="text" name="customer_mother_name" id="customerMotherName" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Father's Name <span class="text-danger">*</span></label>
+                                <input type="text" name="customer_father_name" id="customerFatherName" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Gender <span class="text-danger">*</span></label>
+                                <select name="customer_gender" id="customerGender" class="form-control" required>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Date of Birth <span class="text-danger">*</span></label>
+                                <input type="date" name="customer_dob" id="customerDOB" class="form-control" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Password <span class="text-danger">*</span></label>
@@ -212,6 +236,18 @@
                                         <option value="">Select Company First...</option>
                                     </select>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- Dealer Details -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Dealer Name <span class="text-danger">*</span></label>
+                                <input type="text" name="dealer_name" id="dealerName" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Dealer Mobile <span class="text-danger">*</span></label>
+                                <input type="text" name="dealer_mobile" id="dealerMobile" class="form-control" maxlength="10" required>
                             </div>
                         </div>
 

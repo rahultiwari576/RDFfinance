@@ -462,6 +462,10 @@ $(function () {
         const customerFields = [
             { id: 'customerFirstName', name: 'Customer First Name' },
             { id: 'customerLastName', name: 'Customer Last Name' },
+            { id: 'customerMotherName', name: "Customer Mother's Name" },
+            { id: 'customerFatherName', name: "Customer Father's Name" },
+            { id: 'customerGender', name: 'Customer Gender' },
+            { id: 'customerDOB', name: 'Customer Date of Birth' },
             { id: 'customerAadhar', name: 'Customer Aadhar Number' },
             { id: 'customerMobile', name: 'Customer Mobile Number' },
             { id: 'customerEmail', name: 'Customer Email' },
@@ -643,6 +647,32 @@ $(function () {
                             message: `Please fill ${field.name}.`
                         };
                     }
+                }
+            }
+
+            // Validate Dealer Fields (always required)
+            const dealerFields = [
+                { id: 'dealerName', name: 'Dealer Name' },
+                { id: 'dealerMobile', name: 'Dealer Mobile Number' }
+            ];
+
+            for (let field of dealerFields) {
+                const fieldElement = $(`#${field.id}`);
+                if (!fieldElement.length || !fieldElement.val() || fieldElement.val().trim() === '') {
+                    return {
+                        valid: false,
+                        step: 2,
+                        field: fieldElement || null,
+                        message: `Please fill ${field.name}.`
+                    };
+                }
+                if (field.id === 'dealerMobile' && !/^[0-9]{10}$/.test(fieldElement.val())) {
+                    return {
+                        valid: false,
+                        step: 2,
+                        field: fieldElement,
+                        message: 'Dealer Mobile Number must be 10 digits.'
+                    };
                 }
             }
         }
@@ -1040,7 +1070,7 @@ $(function () {
         this.value = this.value.replace(/\D/g, '').slice(0, 12);
     });
 
-    $('#customerMobile, #customerAltMobile, #guarantorMobile, #reference1Mobile, #reference2Mobile').on('input', function () {
+    $('#customerMobile, #customerAltMobile, #guarantorMobile, #reference1Mobile, #reference2Mobile, #dealerMobile').on('input', function () {
         this.value = this.value.replace(/\D/g, '').slice(0, 10);
     });
 
@@ -1066,7 +1096,12 @@ $(function () {
         if (userData && userData.id) {
             // Pre-fill form fields
             $('#customerFirstName').val(userData.first_name || userData.name.split(' ')[0]);
+            $('#customerMiddleName').val(userData.middle_name || '');
             $('#customerLastName').val(userData.last_name || userData.name.split(' ').slice(1).join(' '));
+            $('#customerMotherName').val(userData.mother_name || '');
+            $('#customerFatherName').val(userData.father_name || '');
+            $('#customerGender').val(userData.gender || 'male');
+            $('#customerDOB').val(userData.dob || '');
             $('#customerAadhar').val(userData.aadhar_number);
             $('#customerMobile').val(userData.phone_number);
             $('#customerAltMobile').val(userData.alternative_phone_number);
