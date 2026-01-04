@@ -241,36 +241,56 @@
                         <input type="password" class="form-control" id="edit_password" name="password" minlength="6">
                     </div>
                     <div class="mb-3">
-                        <label for="edit_address" class="form-label">Address</label>
-                        <textarea class="form-control" id="edit_address" name="address" rows="2"></textarea>
+                        <label for="edit_address_type" class="form-label">Address Type <span class="text-danger">*</span></label>
+                        <select name="address_type" id="edit_address_type" class="form-select" required>
+                            <option value="">Select...</option>
+                            <option value="RESIDENTIAL">RESIDENTIAL</option>
+                            <option value="PERMANENT">PERMANENT</option>
+                            <option value="OFFICE">OFFICE</option>
+                        </select>
                     </div>
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <label for="edit_area" class="form-label">Area</label>
-                            <input type="text" class="form-control" id="edit_area" name="area">
+
+                    <!-- Dynamic Address Fields -->
+                    <div id="edit_address_container" class="d-none">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="edit_flat_building" class="form-label">Flat / Building <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="edit_flat_building" name="flat_building">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit_locality" class="form-label">Locality <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="edit_locality" name="locality">
+                            </div>
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <label for="edit_city" class="form-label">City</label>
-                            <input type="text" class="form-control" id="edit_city" name="city">
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label for="edit_state" class="form-label">State</label>
-                            <input type="text" class="form-control" id="edit_state" name="state">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="edit_state" class="form-label">State <span class="text-danger">*</span></label>
+                                <select name="state" id="edit_state" class="form-select">
+                                    <option value="">Select State...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="edit_city" class="form-label">City <span class="text-danger">*</span></label>
+                                <select name="city" id="edit_city" class="form-select" disabled>
+                                    <option value="">Select City...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="edit_pincode" class="form-label">Pincode <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="edit_pincode" name="pincode" maxlength="6">
+                            </div>
                         </div>
                     </div>
+
                     <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="edit_zip_code" class="form-label">Zip Code</label>
-                            <input type="text" class="form-control" id="edit_zip_code" name="zip_code">
-                        </div>
                         <div class="col-md-6 mb-3">
                             <label for="edit_profession" class="form-label">Profession</label>
                             <input type="text" class="form-control" id="edit_profession" name="profession">
                         </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="edit_education" class="form-label">Education</label>
-                        <input type="text" class="form-control" id="edit_education" name="education">
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_education" class="form-label">Education</label>
+                            <input type="text" class="form-control" id="edit_education" name="education">
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -336,36 +356,56 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label for="create_address" class="form-label">Address</label>
-                        <textarea class="form-control" id="create_address" name="address" rows="2"></textarea>
+                        <label for="create_address_type" class="form-label">Address Type <span class="text-danger">*</span></label>
+                        <select name="address_type" id="create_address_type" class="form-select" required>
+                            <option value="">Select...</option>
+                            <option value="RESIDENTIAL">RESIDENTIAL</option>
+                            <option value="PERMANENT">PERMANENT</option>
+                            <option value="OFFICE">OFFICE</option>
+                        </select>
                     </div>
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <label for="create_area" class="form-label">Area</label>
-                            <input type="text" class="form-control" id="create_area" name="area">
+
+                    <!-- Dynamic Address Fields -->
+                    <div id="create_address_container" class="d-none">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="create_flat_building" class="form-label">Flat / Building <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="create_flat_building" name="flat_building">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="create_locality" class="form-label">Locality <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="create_locality" name="locality">
+                            </div>
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <label for="create_city" class="form-label">City</label>
-                            <input type="text" class="form-control" id="create_city" name="city">
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label for="create_state" class="form-label">State</label>
-                            <input type="text" class="form-control" id="create_state" name="state">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="create_state" class="form-label">State <span class="text-danger">*</span></label>
+                                <select name="state" id="create_state" class="form-select">
+                                    <option value="">Select State...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="create_city" class="form-label">City <span class="text-danger">*</span></label>
+                                <select name="city" id="create_city" class="form-select" disabled>
+                                    <option value="">Select City...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="create_pincode" class="form-label">Pincode <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="create_pincode" name="pincode" maxlength="6">
+                            </div>
                         </div>
                     </div>
+
                     <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="create_zip_code" class="form-label">Zip Code</label>
-                            <input type="text" class="form-control" id="create_zip_code" name="zip_code">
-                        </div>
                         <div class="col-md-6 mb-3">
                             <label for="create_profession" class="form-label">Profession</label>
                             <input type="text" class="form-control" id="create_profession" name="profession">
                         </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="create_education" class="form-label">Education</label>
-                        <input type="text" class="form-control" id="create_education" name="education">
+                        <div class="col-md-6 mb-3">
+                            <label for="create_education" class="form-label">Education</label>
+                            <input type="text" class="form-control" id="create_education" name="education">
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -529,8 +569,11 @@ $(function() {
                         <div class="col-md-6 mb-3">
                             <strong>Total Loans:</strong> ${user.loans_count || 0}
                         </div>
-                        ${user.address ? `<div class="col-12 mb-3"><strong>Address:</strong> ${user.address}</div>` : ''}
-                        ${user.city || user.state ? `<div class="col-12 mb-3"><strong>Location:</strong> ${[user.city, user.state].filter(Boolean).join(', ')}</div>` : ''}
+                        ${user.address_type ? `<div class="col-md-6 mb-3"><strong>Address Type:</strong> ${user.address_type}</div>` : ''}
+                        ${user.flat_building ? `<div class="col-md-6 mb-3"><strong>Flat/Building:</strong> ${user.flat_building}</div>` : ''}
+                        ${user.locality ? `<div class="col-md-6 mb-3"><strong>Locality:</strong> ${user.locality}</div>` : ''}
+                        ${user.city || user.state ? `<div class="col-md-6 mb-3"><strong>Location:</strong> ${[user.city, user.state].filter(Boolean).join(', ')}</div>` : ''}
+                        ${user.pincode ? `<div class="col-md-6 mb-3"><strong>Pincode:</strong> ${user.pincode}</div>` : ''}
                         ${user.profession ? `<div class="col-md-6 mb-3"><strong>Profession:</strong> ${user.profession}</div>` : ''}
                         ${user.education ? `<div class="col-md-6 mb-3"><strong>Education:</strong> ${user.education}</div>` : ''}
                     </div>
@@ -772,14 +815,36 @@ $(function() {
                 $('#edit_phone_number').val(user.phone_number || '');
                 $('#edit_aadhar_number').val(user.aadhar_number || '');
                 $('#edit_pan_number').val(user.pan_number || '');
-                $('#edit_address').val(user.address || '');
-                $('#edit_area').val(user.area || '');
-                $('#edit_city').val(user.city || '');
-                $('#edit_state').val(user.state || '');
-                $('#edit_zip_code').val(user.zip_code || '');
-                $('#edit_profession').val(user.profession || '');
-                $('#edit_education').val(user.education || '');
                 $('#edit_password').val('');
+                
+                // Pre-fill Address Fields
+                if (user.address_type) {
+                    $('#edit_address_type').val(user.address_type).trigger('change');
+                    $('#edit_flat_building').val(user.flat_building || user.address || ''); // fallback to old address column if needed
+                    $('#edit_locality').val(user.locality || user.area || '');
+                    
+                    // Re-initialize states and populate cities
+                    const stateSelect = $('#edit_state');
+                    stateSelect.empty().append('<option value="">Select State...</option>');
+                    // This statesAndCities is from admin-dashboard.js which will be included
+                    // But we can just use the logic from there or make it global
+                    // For now, I'll ensure it works by making it available.
+                } else {
+                    $('#edit_address_type').val('').trigger('change');
+                }
+                
+                // We need to wait a bit for the trigger('change') to process or manually call it
+                setTimeout(() => {
+                    if (user.state) {
+                        $('#edit_state').val(user.state).trigger('change');
+                        setTimeout(() => {
+                            if (user.city) {
+                                $('#edit_city').val(user.city);
+                            }
+                        }, 100);
+                    }
+                    $('#edit_pincode').val(user.pincode || user.zip_code || '');
+                }, 200);
                 
                 new bootstrap.Modal(document.getElementById('editUserModal')).show();
             })
@@ -907,6 +972,7 @@ $(function() {
     });
 });
 </script>
+<script src="{{ asset('js/admin-dashboard.js') }}"></script>
 @endpush
 
 @push('styles')

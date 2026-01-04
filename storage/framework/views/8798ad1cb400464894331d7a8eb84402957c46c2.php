@@ -103,6 +103,36 @@
                                     <option value="OFFICE">OFFICE</option>
                                 </select>
                             </div>
+
+                            <!-- Dynamic Address Fields -->
+                            <div id="addressDetailsContainer" class="col-12 d-none">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Flat / Building <span class="text-danger">*</span></label>
+                                        <input type="text" name="customer_flat_building" id="customerFlatBuilding" class="form-control">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Locality <span class="text-danger">*</span></label>
+                                        <input type="text" name="customer_locality" id="customerLocality" class="form-control">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">State <span class="text-danger">*</span></label>
+                                        <select name="customer_state" id="customerState" class="form-select">
+                                            <option value="">Select State...</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">City <span class="text-danger">*</span></label>
+                                        <select name="customer_city" id="customerCity" class="form-select" disabled>
+                                            <option value="">Select City...</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Pincode <span class="text-danger">*</span></label>
+                                        <input type="text" name="customer_pincode" id="customerPincode" class="form-control" maxlength="6">
+                                    </div>
+                                </div>
+                            </div>
                             <div class="col-md-6">
                                 <label class="form-label">Employment Type <span class="text-danger">*</span></label>
                                 <select name="customer_employment_type" id="customerEmploymentType" class="form-control" required>

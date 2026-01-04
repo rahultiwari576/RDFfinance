@@ -2,19 +2,103 @@ $(function () {
     const form = $('#adminLoanApplicationForm');
     let currentStep = 1;
 
+    const statesAndCities = {
+        "Andhra Pradesh": ["Visakhapatnam", "Vijayawada", "Guntur", "Nellore", "Kurnool", "Tirupati", "Rajahmundry", "Kakinada"],
+        "Arunachal Pradesh": ["Itanagar", "Naharlagun", "Pasighat"],
+        "Assam": ["Guwahati", "Silchar", "Dibrugarh", "Jorhat", "Nagaon", "Tinsukia", "Tezpur"],
+        "Bihar": ["Patna", "Gaya", "Bhagalpur", "Muzaffarpur", "Purnia", "Darbhanga", "Arrah", "Begusarai"],
+        "Chhattisgarh": ["Raipur", "Bhilai", "Bilaspur", "Korba", "Rajnandgaon", "Raigarh", "Jagdalpur"],
+        "Goa": ["Panaji", "Margao", "Vasco da Gama", "Mapusa"],
+        "Gujarat": ["Ahmedabad", "Surat", "Vadodara", "Rajkot", "Bhavnagar", "Jamnagar", "Junagadh", "Gandhinagar"],
+        "Haryana": ["Faridabad", "Gurgaon", "Panipat", "Ambala", "Yamunanagar", "Rohtak", "Hisar", "Karnal"],
+        "Himachal Pradesh": ["Shimla", "Dharamshala", "Solan", "Mandi"],
+        "Jharkhand": ["Jamshedpur", "Dhanbad", "Ranchi", "Bokaro", "Deoghar", "Phusro", "Hazaribagh"],
+        "Karnataka": ["Bangalore", "Hubli", "Mysore", "Gulbarga", "Belgaum", "Mangalore", "Davanagere", "Bellary"],
+        "Kerala": ["Thiruvananthapuram", "Kochi", "Kozhikode", "Kollam", "Thrissur", "Alappuzha", "Palakkad"],
+        "Madhya Pradesh": ["Indore", "Bhopal", "Jabalpur", "Gwalior", "Ujjain", "Sagar", "Dewas", "Satna"],
+        "Maharashtra": ["Mumbai", "Pune", "Nagpur", "Thane", "Pimpri-Chinchwad", "Nashik", "Kalyan-Dombivli", "Vasai-Virar", "Aurangabad", "Navi Mumbai", "Solapur", "Mira-Bhayandar", "Nagpur"],
+        "Manipur": ["Imphal"],
+        "Meghalaya": ["Shillong", "Tura"],
+        "Mizoram": ["Aizawl", "Lunglei"],
+        "Nagaland": ["Dimapur", "Kohima"],
+        "Odisha": ["Bhubaneswar", "Cuttack", "Rourkela", "Berhampur", "Sambalpur", "Puri", "Balasore"],
+        "Punjab": ["Ludhiana", "Amritsar", "Jalandhar", "Patiala", "Bathinda", "Mohali", "Hoshiarpur"],
+        "Rajasthan": ["Jaipur", "Jodhpur", "Kota", "Bikaner", "Ajmer", "Udaipur", "Bhilwara", "Alwar"],
+        "Sikkim": ["Gangtok"],
+        "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem", "Tiruppur", "Erode", "Vellore"],
+        "Telangana": ["Hyderabad", "Warangal", "Nizamabad", "Khammam", "Karimnagar", "Ramagundam", "Mahbubnagar"],
+        "Tripura": ["Agartala"],
+        "Uttar Pradesh": ["Lucknow", "Kanpur", "Ghaziabad", "Agra", "Meerut", "Varanasi", "Prayagraj", "Bareilly", "Aligarh", "Moradabad", "Noida", "Gorakhpur"],
+        "Uttarakhand": ["Dehradun", "Haridwar", "Roorkee", "Haldwani", "Rudrapur"],
+        "West Bengal": ["Kolkata", "Howrah", "Asansol", "Siliguri", "Durgapur", "Bardhaman", "Malda", "Baharampur"],
+        "Andaman and Nicobar Islands": ["Port Blair"],
+        "Chandigarh": ["Chandigarh"],
+        "Dadra and Nagar Haveli and Daman and Diu": ["Daman", "Diu", "Silvassa"],
+        "Delhi": ["Delhi", "New Delhi"],
+        "Jammu and Kashmir": ["Srinagar", "Jammu", "Anantnag"],
+        "Ladakh": ["Leh", "Kargil"],
+        "Lakshadweep": ["Kavaratti"],
+        "Puducherry": ["Puducherry", "Ozhukarai"]
+    };
+
+    // Initialize States
+    function initializeStates() {
+        const stateSelect = $('#customerState');
+        if (stateSelect.length) {
+            stateSelect.empty().append('<option value="">Select State...</option>');
+            Object.keys(statesAndCities).sort().forEach(state => {
+                stateSelect.append(`<option value="${state}">${state}</option>`);
+            });
+        }
+    }
+
+    // Populate Cities based on State
+    $('#customerState').on('change', function () {
+        const state = $(this).val();
+        const citySelect = $('#customerCity');
+        citySelect.empty().append('<option value="">Select City...</option>');
+
+        if (state && statesAndCities[state]) {
+            statesAndCities[state].sort().forEach(city => {
+                citySelect.append(`<option value="${city}">${city}</option>`);
+            });
+            citySelect.prop('disabled', false);
+        } else {
+            citySelect.prop('disabled', true);
+        }
+    });
+
+    // Address Type Change Handler
+    $('#customerAddressType').on('change', function () {
+        if ($(this).val()) {
+            $('#addressDetailsContainer').removeClass('d-none').hide().fadeIn();
+            initializeStates();
+        } else {
+            $('#addressDetailsContainer').fadeOut();
+        }
+    });
+
+    // Pincode Formatting
+    $('#customerPincode').on('input', function () {
+        this.value = this.value.replace(/\D/g, '').slice(0, 6);
+    });
+
     // Customer Type Toggle
     $('input[name="customer_type"]').on('change', function () {
         if ($(this).val() === 'existing') {
             $('#existingCustomerSection').removeClass('d-none');
-            // Hide only customer input fields row (not guarantor section)
-            $('#customerFieldsRow').addClass('d-none');
-            $('#customerFieldsRow input, #customerFieldsRow select').prop('required', false);
+            // Show customer fields so they can be pre-filled and edited
+            $('#customerFieldsRow').removeClass('d-none');
+            // Password is not required for existing users
+            $('#customerPassword').prop('required', false).closest('.col-md-6').fadeOut();
             loadExistingUsers();
         } else {
             $('#existingCustomerSection').addClass('d-none');
-            // Show customer input fields
+            // Show and reset customer fields
             $('#customerFieldsRow').removeClass('d-none');
+            $('#customerFieldsRow input, #customerFieldsRow select').val('').trigger('change');
             $('#customerFieldsRow input[required], #customerFieldsRow select[required]').prop('required', true);
+            $('#customerPassword').prop('required', true).closest('.col-md-6').fadeIn();
         }
     });
 
@@ -316,37 +400,8 @@ $(function () {
             return;
         }
 
-        const mobile = $('#customerMobile').val() || (window.selectedUserMobile);
-        const otp = $('#mobileOTP').val();
-
-        if (!mobile) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Mobile Required',
-                text: 'Please enter customer mobile number in Step 1.'
-            });
-            showStep(1);
-            return;
-        }
-
-        $(this).prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Verifying...');
-
-        axios.post('/admin/loans/verify-otp', { mobile: mobile, otp: otp })
-            .then(({ data }) => {
-                if (data.status) {
-                    showStep(3);
-                }
-            })
-            .catch((error) => {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'OTP Verification Failed',
-                    text: error.response?.data?.message || 'Invalid or expired OTP.'
-                });
-            })
-            .finally(() => {
-                $(this).prop('disabled', false).html('Next <i class="bi bi-arrow-right ms-2"></i>');
-            });
+        // OTP verification bypassed for now
+        showStep(3);
     });
 
     $('#nextToStep4').on('click', function () {
@@ -401,34 +456,69 @@ $(function () {
                     message: 'Please select a customer.'
                 };
             }
-        } else {
-            // Validate new customer fields
-            const customerFields = [
-                { id: 'customer_first_name', name: 'Customer First Name' },
-                { id: 'customer_last_name', name: 'Customer Last Name' },
-                { id: 'customer_password', name: 'Customer Password' },
-                { id: 'customer_aadhar_number', name: 'Customer Aadhar Number' },
-                { id: 'customer_mobile_number', name: 'Customer Mobile Number' },
-                { id: 'customer_email', name: 'Customer Email' },
-                { id: 'customer_pan_number', name: 'Customer PAN Number' },
-                { id: 'customer_address_type', name: 'Customer Address Type' },
-                { id: 'customer_employment_type', name: 'Customer Employment Type' }
+        }
+
+        // Validate common customer fields (required for both)
+        const customerFields = [
+            { id: 'customerFirstName', name: 'Customer First Name' },
+            { id: 'customerLastName', name: 'Customer Last Name' },
+            { id: 'customerAadhar', name: 'Customer Aadhar Number' },
+            { id: 'customerMobile', name: 'Customer Mobile Number' },
+            { id: 'customerEmail', name: 'Customer Email' },
+            { id: 'customerPAN', name: 'Customer PAN Number' },
+            { id: 'customerAddressType', name: 'Customer Address Type' },
+            { id: 'customerEmploymentType', name: 'Customer Employment Type' }
+        ];
+
+        // Password is only required for new customers
+        if (customerType === 'new') {
+            customerFields.push({ id: 'customerPassword', name: 'Customer Password' });
+        }
+
+        for (let field of customerFields) {
+            const fieldElement = $(`#${field.id}`);
+            if (!fieldElement.length) {
+                console.error(`Customer field not found: #${field.id}`);
+                continue;
+            }
+
+            const fieldValue = fieldElement.val();
+            if (!fieldValue || fieldValue.trim() === '') {
+                return {
+                    valid: false,
+                    step: 1,
+                    field: fieldElement,
+                    message: `Please fill ${field.name}.`
+                };
+            }
+        }
+
+        // Validate Address Details if Address Type is selected
+        if ($('#customerAddressType').val()) {
+            const addressFields = [
+                { id: 'customerFlatBuilding', name: 'Flat / Building' },
+                { id: 'customerLocality', name: 'Locality' },
+                { id: 'customerState', name: 'State' },
+                { id: 'customerCity', name: 'City' },
+                { id: 'customerPincode', name: 'Pincode' }
             ];
 
-            for (let field of customerFields) {
+            for (let field of addressFields) {
                 const fieldElement = $(`#${field.id}`);
-                if (!fieldElement.length) {
-                    console.error(`Customer field not found: #${field.id}`);
-                    continue;
-                }
-
-                const fieldValue = fieldElement.val();
-                if (!fieldValue || fieldValue.trim() === '') {
+                if (!fieldElement.val() || fieldElement.val().trim() === '') {
                     return {
                         valid: false,
                         step: 1,
                         field: fieldElement,
                         message: `Please fill ${field.name}.`
+                    };
+                }
+                if (field.id === 'customerPincode' && fieldElement.val().length !== 6) {
+                    return {
+                        valid: false,
+                        step: 1,
+                        field: fieldElement,
+                        message: 'Pincode must be 6 digits.'
                     };
                 }
             }
@@ -557,7 +647,8 @@ $(function () {
             }
         }
 
-        // Validate mobile OTP
+        // OTP validation bypassed for now
+        /*
         const mobileOTP = $('#mobileOTP');
         if (!mobileOTP.length || !mobileOTP.val() || mobileOTP.val().trim() === '') {
             return {
@@ -567,16 +658,14 @@ $(function () {
                 message: 'Please enter mobile OTP.'
             };
         }
-
-        // Note: For real-time verification, we could call verifyLoanOtp here,
-        // but since this is a synchronous validation function, we'll handle
-        // the async verification in the button click handler.
+        */
 
         return { valid: true };
     }
 
     function validateStep3() {
-        // Validate Aadhar OTP
+        // OTP validation bypassed for now
+        /*
         const aadharOTP = $('#aadharOTP');
         if (!aadharOTP.length || !aadharOTP.val() || aadharOTP.val().trim() === '') {
             return {
@@ -586,6 +675,7 @@ $(function () {
                 message: 'Please enter Aadhar OTP.'
             };
         }
+        */
 
         // Validate loan and bank details
         const requiredFields = [
@@ -868,25 +958,7 @@ $(function () {
             });
     }
 
-    // Populate form when user is selected
-    $('#existingUserId').on('change', function () {
-        const userId = $(this).val();
-        const userData = usersDataMap[userId];
 
-        if (userData && userData.id) {
-            // Show confirmation that user is selected
-            console.log('Selected user:', userData);
-            // Remove any existing notifications
-            $('.user-selected-notification').remove();
-            // Show notification
-            const notification = $(`<div class="alert alert-info alert-dismissible fade show user-selected-notification" role="alert" style="margin-top: 10px;">
-                <strong><i class="bi bi-check-circle me-2"></i>User Selected:</strong> ${userData.name} (${userData.email})
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>`);
-            $('#existingCustomerSection').after(notification);
-            setTimeout(() => notification.fadeOut(() => notification.remove()), 5000);
-        }
-    });
 
     // Handle "Apply Loan" button from users table
     $(document).on('click', '.apply-loan-user', function () {
@@ -986,16 +1058,62 @@ $(function () {
         }
     });
 
-    // Also handle existing user selection for OTP
+    // Unified handler for existing user selection
     $('#existingUserId').on('change', function () {
         const userId = $(this).val();
         const userData = usersDataMap[userId];
-        if (userData && userData.phone_number) {
+
+        if (userData && userData.id) {
+            // Pre-fill form fields
+            $('#customerFirstName').val(userData.first_name || userData.name.split(' ')[0]);
+            $('#customerLastName').val(userData.last_name || userData.name.split(' ').slice(1).join(' '));
+            $('#customerAadhar').val(userData.aadhar_number);
+            $('#customerMobile').val(userData.phone_number);
+            $('#customerAltMobile').val(userData.alternative_phone_number);
+            $('#customerEmail').val(userData.email);
+            $('#customerPAN').val(userData.pan_number);
+
+            if (userData.address_type) {
+                $('#customerAddressType').val(userData.address_type).trigger('change');
+
+                // Populate address details after small delay to allow container fade-in
+                setTimeout(() => {
+                    $('#customerFlatBuilding').val(userData.address);
+                    $('#customerLocality').val(userData.area);
+                    $('#customerPincode').val(userData.zip_code);
+
+                    if (userData.state) {
+                        $('#customerState').val(userData.state).trigger('change');
+
+                        // Populate city after state change triggers city load
+                        setTimeout(() => {
+                            if (userData.city) {
+                                $('#customerCity').val(userData.city);
+                            }
+                        }, 200);
+                    }
+                }, 300);
+            }
+
+            if (userData.employment_type) {
+                $('#customerEmploymentType').val(userData.employment_type);
+            }
+
+            // OTP Logic
             window.selectedUserMobile = userData.phone_number;
-            // For existing users, we'll send OTP automatically when selected
-            if (window.selectedUserMobile.length === 10) {
+            if (window.selectedUserMobile && window.selectedUserMobile.length === 10) {
                 sendLoanOtp(window.selectedUserMobile);
             }
+
+            // Show notification
+            $('.user-selected-notification').remove();
+            const notification = $(`<div class="alert alert-info alert-dismissible fade show user-selected-notification" role="alert" style="margin-top: 10px;">
+                <strong><i class="bi bi-check-circle me-2"></i>User Selected:</strong> ${userData.name} (${userData.email})
+                <div class="small mt-1">Fields have been pre-filled. You can edit them if needed.</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>`);
+            $('#existingCustomerSection').after(notification);
+            setTimeout(() => notification.fadeOut(() => notification.remove()), 8000);
         }
     });
 
