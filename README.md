@@ -86,3 +86,4 @@ SMTP defaults are provided in `.env.example`. For production configure your own 
 
 Enjoy building with RDFFinance!
 
+"# RDFfinance" 
