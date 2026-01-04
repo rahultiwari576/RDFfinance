@@ -172,11 +172,15 @@
                             <div class="row g-3 mb-3">
                                 <div class="col-md-6">
                                     <label class="form-label">Company Name <span class="text-danger">*</span></label>
-                                    <input type="text" name="vehicle_company_name" id="vehicleCompanyName" class="form-control" required>
+                                    <select name="vehicle_company_name" id="vehicleCompanyName" class="form-select" required>
+                                        <option value="">Select Company...</option>
+                                    </select>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Model Name <span class="text-danger">*</span></label>
-                                    <input type="text" name="vehicle_model_name" id="vehicleModelName" class="form-control" required>
+                                    <select name="vehicle_model_name" id="vehicleModelName" class="form-select" required disabled>
+                                        <option value="">Select Company First...</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -186,11 +190,15 @@
                             <div class="row g-3 mb-3">
                                 <div class="col-md-6">
                                     <label class="form-label">Company Name <span class="text-danger">*</span></label>
-                                    <input type="text" name="used_vehicle_company" id="usedVehicleCompany" class="form-control">
+                                    <select name="used_vehicle_company" id="usedVehicleCompany" class="form-select">
+                                        <option value="">Select Company...</option>
+                                    </select>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Model Name <span class="text-danger">*</span></label>
-                                    <input type="text" name="used_vehicle_model" id="usedVehicleModel" class="form-control">
+                                    <select name="used_vehicle_model" id="usedVehicleModel" class="form-select" disabled>
+                                        <option value="">Select Company First...</option>
+                                    </select>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Engine Number <span class="text-danger">*</span></label>
@@ -546,6 +554,19 @@
     from { opacity: 0; transform: translateX(20px); }
     to { opacity: 1; transform: translateX(0); }
 }
+/* Invalid field highlighting */
+.form-control.is-invalid,
+.form-select.is-invalid,
+input.is-invalid {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+    animation: shake 0.5s;
+}
+@keyframes  shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
 .step-title {
     color: #2d3748;
     font-weight: 600;
@@ -558,4 +579,4 @@
 <script src="<?php echo e(asset('js/admin-loan-application.js')); ?>"></script>
 <?php $__env->stopPush(); ?>
 
-<?php /**PATH D:\ARTtoframe_rahul\finance\resources\views/admin/loan-application.blade.php ENDPATH**/ ?>
+<?php /**PATH D:\New folder\finance\resources\views/admin/loan-application.blade.php ENDPATH**/ ?>

@@ -36,4 +36,4 @@
         </div>
     </body>
 </html>
-<?php /**PATH D:\ARTtoframe_rahul\finance\vendor\laravel\framework\src\Illuminate\Foundation\Exceptions/views/minimal.blade.php ENDPATH**/ ?>
+<?php /**PATH D:\New folder\finance\vendor\laravel\framework\src\Illuminate\Foundation\Exceptions/views/minimal.blade.php ENDPATH**/ ?>

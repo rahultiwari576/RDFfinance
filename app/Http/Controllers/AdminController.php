@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Mail\LoanApplicationMail;
 use App\Models\Loan;
 use App\Models\LoanDraft;
+use App\Models\Otp;
 use App\Models\User;
 use App\Services\LoanService;
+use App\Services\OtpService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,8 +18,10 @@ use Illuminate\Support\Facades\Mail;
 
 class AdminController extends Controller
 {
-    public function __construct(private readonly LoanService $loanService)
-    {
+    public function __construct(
+        private readonly LoanService $loanService,
+        private readonly OtpService $otpService
+    ) {
         $this->middleware(['auth', 'admin']);
     }
 
@@ -367,6 +371,23 @@ class AdminController extends Controller
                 }
             }
 
+            // Verify Mobile OTP
+            $mobileNumber = $validated['customer_type'] === 'new' 
+                ? $validated['customer_mobile_number'] 
+                : $user->phone_number;
+
+            $otpVerified = Otp::where('mobile', $mobileNumber)
+                ->where('code', $validated['mobile_otp'])
+                ->whereNotNull('verified_at')
+                ->exists();
+
+            if (!$otpVerified) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Mobile OTP verification failed. Please verify OTP in Step 2.',
+                ], 400);
+            }
+
             // Calculate EMI
             $principal = $validated['principal_amount'];
             $rate = $validated['interest_rate'] / 100 / 12;
@@ -623,5 +644,40 @@ class AdminController extends Controller
                 'message' => 'Failed to delete draft: ' . $e->getMessage(),
             ], 500);
         }
+    }
+    public function sendLoanOtp(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'mobile' => ['required', 'regex:/^[0-9]{10}$/'],
+        ]);
+
+        $mobile = $validated['mobile'];
+        $this->otpService->generateOtpForMobile($mobile);
+
+        // In a real app, send SMS here. For now, we just return success.
+        
+        return response()->json([
+            'status' => true,
+            'message' => "OTP sent to mobile number {$mobile}",
+        ]);
+    }
+
+    public function verifyLoanOtp(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'mobile' => ['required', 'regex:/^[0-9]{10}$/'],
+            'otp' => ['required', 'string', 'size:6'],
+        ]);
+
+        $verification = $this->otpService->verifyMobileOtp($validated['mobile'], $validated['otp']);
+
+        if (!$verification['status']) {
+            return response()->json($verification, 400);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'OTP verified successfully.',
+        ]);
     }
 }

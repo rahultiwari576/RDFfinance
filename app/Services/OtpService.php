@@ -69,6 +69,43 @@ class OtpService
         ];
     }
 
+    public function generateOtpForMobile(string $mobile): Otp
+    {
+        $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        return Otp::create([
+            'mobile' => $mobile,
+            'code' => $code,
+            'expires_at' => Carbon::now()->addMinutes((int) config('otp.expiry', 15)),
+        ]);
+    }
+
+    public function verifyMobileOtp(string $mobile, string $code): array
+    {
+        $otp = Otp::where('mobile', $mobile)
+            ->where('code', $code)
+            ->where('expires_at', '>', Carbon::now())
+            ->whereNull('verified_at')
+            ->latest()
+            ->first();
+
+        if (!$otp) {
+            return [
+                'status' => false,
+                'message' => 'Invalid or expired OTP.',
+            ];
+        }
+
+        $otp->update([
+            'verified_at' => Carbon::now(),
+        ]);
+
+        return [
+            'status' => true,
+            'otp' => $otp,
+        ];
+    }
+
     protected function sendOtpMail(User $user, string $code): void
     {
         $subject = 'Your RDFFinance OTP';

@@ -1,5 +1,5 @@
 {
-    "name": "user/RDFFinance",
+    "name": "user/rdf-finance",
     "description": "Laravel 8.1 loan management and authentication application",
     "keywords": [
         "laravel",
@@ -11,14 +11,15 @@
     "type": "project",
     "require": {
         "php": "^7.3|^8.0",
+        "doctrine/dbal": "^4.2",
         "fideloper/proxy": "^4.4",
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.0.1",
         "laravel/framework": "^8.83",
         "laravel/tinker": "^2.5",
+        "nesbot/carbon": "^2.72",
         "smalot/pdfparser": "^2.10",
-        "thiagoalessio/tesseract_ocr": "^2.13",
-        "nesbot/carbon": "^2.72"
+        "thiagoalessio/tesseract_ocr": "^2.13"
     },
     "require-dev": {
         "facade/ignition": "^2.5",
@@ -66,4 +67,3 @@
     "minimum-stability": "dev",
     "prefer-stable": true
 }
-

@@ -20,12 +20,16 @@ $otps = Otp::with('user')
 if ($otps->isEmpty()) {
     echo "No active OTPs found.\n";
     echo "\nTo generate an OTP:\n";
-    echo "1. Go to login page\n";
-    echo "2. Use Aadhar login\n";
-    echo "3. Check this script again or check storage/logs/laravel.log\n";
+    echo "Option A (Mobile Login): Go to login page -> Use Aadhar login\n";
+    echo "Option B (Loan Application): Go to loan application form -> Type a 10-digit mobile number\n";
+    echo "3. Check this script again\n";
 } else {
     foreach ($otps as $otp) {
-        echo "User: {$otp->user->name} ({$otp->user->email})\n";
+        if ($otp->user) {
+            echo "User: {$otp->user->name} ({$otp->user->email})\n";
+        } else {
+            echo "Mobile: {$otp->mobile}\n";
+        }
         echo "OTP Code: {$otp->code}\n";
         echo "Expires: {$otp->expires_at->format('Y-m-d H:i:s')}\n";
         echo "Created: {$otp->created_at->format('Y-m-d H:i:s')}\n";
@@ -42,6 +46,7 @@ $allOtps = Otp::with('user')
 
 foreach ($allOtps as $otp) {
     $status = $otp->verified_at ? '✅ Verified' : ($otp->expires_at->isPast() ? '❌ Expired' : '⏳ Active');
-    echo "[{$status}] {$otp->user->email} - OTP: {$otp->code} - Created: {$otp->created_at->format('H:i:s')}\n";
+    $identifier = $otp->user ? $otp->user->email : $otp->mobile;
+    echo "[{$status}] {$identifier} - OTP: {$otp->code} - Created: {$otp->created_at->format('H:i:s')}\n";
 }
 

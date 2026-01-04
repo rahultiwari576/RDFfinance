@@ -62,4 +62,4 @@
 </body>
 </html>
 
-<?php /**PATH D:\ARTtoframe_rahul\finance\resources\views/layouts/app.blade.php ENDPATH**/ ?>
+<?php /**PATH D:\New folder\finance\resources\views/layouts/app.blade.php ENDPATH**/ ?>

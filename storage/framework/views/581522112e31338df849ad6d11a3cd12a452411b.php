@@ -1,18 +1,18 @@
-@extends('layouts.app')
 
-@section('title', 'Admin Dashboard')
 
-@section('content')
+<?php $__env->startSection('title', 'Admin Dashboard'); ?>
+
+<?php $__env->startSection('content'); ?>
 <div class="row g-4">
     <!-- Header -->
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h4 class="fw-bold mb-0">Admin Dashboard</h4>
             <div>
-                <a href="{{ route('admin.vehicles.index') }}" class="btn btn-outline-info me-2">
+                <a href="<?php echo e(route('admin.vehicles.index')); ?>" class="btn btn-outline-info me-2">
                     <i class="bi bi-car-front"></i> Manage Vehicles
                 </a>
-                <a href="{{ route('home') }}" class="btn btn-outline-primary">
+                <a href="<?php echo e(route('home')); ?>" class="btn btn-outline-primary">
                     <i class="bi bi-arrow-left"></i> Back to Home
                 </a>
             </div>
@@ -28,7 +28,7 @@
                         <div class="summary-icon mb-2">
                             <i class="bi bi-people display-6"></i>
                         </div>
-                        <h3 class="mb-0 fw-bold">{{ $users->count() }}</h3>
+                        <h3 class="mb-0 fw-bold"><?php echo e($users->count()); ?></h3>
                         <p class="mb-0 opacity-75">Total Users</p>
                     </div>
                 </div>
@@ -39,7 +39,7 @@
                         <div class="summary-icon mb-2">
                             <i class="bi bi-shield-check display-6"></i>
                         </div>
-                        <h3 class="mb-0 fw-bold">{{ $users->where('role', 'admin')->count() }}</h3>
+                        <h3 class="mb-0 fw-bold"><?php echo e($users->where('role', 'admin')->count()); ?></h3>
                         <p class="mb-0 opacity-75">Admins</p>
                     </div>
                 </div>
@@ -50,7 +50,7 @@
                         <div class="summary-icon mb-2">
                             <i class="bi bi-person display-6"></i>
                         </div>
-                        <h3 class="mb-0 fw-bold">{{ $users->where('role', 'user')->count() }}</h3>
+                        <h3 class="mb-0 fw-bold"><?php echo e($users->where('role', 'user')->count()); ?></h3>
                         <p class="mb-0 opacity-75">Regular Users</p>
                     </div>
                 </div>
@@ -61,7 +61,7 @@
                         <div class="summary-icon mb-2">
                             <i class="bi bi-bank display-6"></i>
                         </div>
-                        <h3 class="mb-0 fw-bold">{{ $loans->count() }}</h3>
+                        <h3 class="mb-0 fw-bold"><?php echo e($loans->count()); ?></h3>
                         <p class="mb-0 opacity-75">Total Loans</p>
                     </div>
                 </div>
@@ -102,43 +102,43 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($users as $user)
+                            <?php $__empty_1 = true; $__currentLoopData = $users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                             <tr>
-                                <td class="text-center">{{ $user->id }}</td>
-                                <td><strong>{{ $user->name }}</strong></td>
-                                <td>{{ $user->email }}</td>
-                                <td class="text-center"><span class="badge bg-{{ $user->isAdmin() ? 'danger' : 'primary' }}">{{ ucfirst($user->role) }}</span></td>
-                                <td class="text-center">{{ $user->loans_count }}</td>
+                                <td class="text-center"><?php echo e($user->id); ?></td>
+                                <td><strong><?php echo e($user->name); ?></strong></td>
+                                <td><?php echo e($user->email); ?></td>
+                                <td class="text-center"><span class="badge bg-<?php echo e($user->isAdmin() ? 'danger' : 'primary'); ?>"><?php echo e(ucfirst($user->role)); ?></span></td>
+                                <td class="text-center"><?php echo e($user->loans_count); ?></td>
                                 <td class="text-center">
-                                    @if(!$user->isAdmin())
-                                        <button class="btn btn-sm btn-success apply-loan-user" data-user-id="{{ $user->id }}" data-user-name="{{ $user->name }}" data-user-email="{{ $user->email }}" title="Apply Loan">
+                                    <?php if(!$user->isAdmin()): ?>
+                                        <button class="btn btn-sm btn-success apply-loan-user" data-user-id="<?php echo e($user->id); ?>" data-user-name="<?php echo e($user->name); ?>" data-user-email="<?php echo e($user->email); ?>" title="Apply Loan">
                                             <i class="bi bi-bank me-1"></i>Apply Loan
                                         </button>
-                                    @else
+                                    <?php else: ?>
                                         <span class="text-muted">-</span>
-                                    @endif
+                                    <?php endif; ?>
                                 </td>
                                 <td class="text-center">
                                     <div class="btn-group btn-group-sm" role="group">
-                                        <button class="btn btn-info view-user" data-user-id="{{ $user->id }}" title="View Details">
+                                        <button class="btn btn-info view-user" data-user-id="<?php echo e($user->id); ?>" title="View Details">
                                             <i class="bi bi-eye"></i>
                                         </button>
-                                        <button class="btn btn-warning edit-user" data-user-id="{{ $user->id }}" title="Edit">
+                                        <button class="btn btn-warning edit-user" data-user-id="<?php echo e($user->id); ?>" title="Edit">
                                             <i class="bi bi-pencil"></i>
                                         </button>
-                                        @if($user->id !== auth()->id())
-                                            <button class="btn btn-danger delete-user" data-user-id="{{ $user->id }}" title="Delete">
+                                        <?php if($user->id !== auth()->id()): ?>
+                                            <button class="btn btn-danger delete-user" data-user-id="<?php echo e($user->id); ?>" title="Delete">
                                                 <i class="bi bi-trash"></i>
                                             </button>
-                                        @endif
+                                        <?php endif; ?>
                                     </div>
                                 </td>
                             </tr>
-                            @empty
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                             <tr>
                                 <td colspan="7" class="text-center text-muted py-4">No users found.</td>
                             </tr>
-                            @endforelse
+                            <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
@@ -167,23 +167,23 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($loans as $loan)
+                            <?php $__empty_1 = true; $__currentLoopData = $loans; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $loan): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                             <tr>
-                                <td class="text-center">{{ $loan->id }}</td>
-                                <td><strong>{{ $loan->user->name }}</strong></td>
-                                <td class="text-end">₹{{ number_format($loan->principal_amount, 2) }}</td>
-                                <td class="text-center"><span class="badge bg-{{ $loan->status === 'active' ? 'success' : 'secondary' }}">{{ ucfirst($loan->status) }}</span></td>
+                                <td class="text-center"><?php echo e($loan->id); ?></td>
+                                <td><strong><?php echo e($loan->user->name); ?></strong></td>
+                                <td class="text-end">₹<?php echo e(number_format($loan->principal_amount, 2)); ?></td>
+                                <td class="text-center"><span class="badge bg-<?php echo e($loan->status === 'active' ? 'success' : 'secondary'); ?>"><?php echo e(ucfirst($loan->status)); ?></span></td>
                                 <td class="text-center">
-                                    <button class="btn btn-sm btn-danger delete-loan" data-loan-id="{{ $loan->id }}">
+                                    <button class="btn btn-sm btn-danger delete-loan" data-loan-id="<?php echo e($loan->id); ?>">
                                         <i class="bi bi-trash me-1"></i>Delete
                                     </button>
                                 </td>
                             </tr>
-                            @empty
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                             <tr>
                                 <td colspan="5" class="text-center text-muted py-4">No loans found.</td>
                             </tr>
-                            @endforelse
+                            <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
@@ -445,10 +445,10 @@
     </div>
 </div>
 
-@include('admin.loan-application')
-@endsection
+<?php echo $__env->make('admin.loan-application', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+<?php $__env->stopSection(); ?>
 
-@push('scripts')
+<?php $__env->startPush('scripts'); ?>
 <script>
 $(function() {
     // Create User
@@ -907,9 +907,9 @@ $(function() {
     });
 });
 </script>
-@endpush
+<?php $__env->stopPush(); ?>
 
-@push('styles')
+<?php $__env->startPush('styles'); ?>
 <style>
     .summary-card {
         border-radius: 15px;
@@ -1004,5 +1004,7 @@ $(function() {
         }
     }
 </style>
-@endpush
+<?php $__env->stopPush(); ?>
 
+
+<?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH D:\New folder\finance\resources\views/admin/dashboard.blade.php ENDPATH**/ ?>

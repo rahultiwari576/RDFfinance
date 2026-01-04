@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\RegistrationController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -59,9 +60,22 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::post('/loans/draft/save', [AdminController::class, 'saveLoanDraft'])->name('admin.loans.draft.save');
     Route::get('/loans/draft/load', [AdminController::class, 'loadLoanDraft'])->name('admin.loans.draft.load');
     Route::delete('/loans/draft/delete', [AdminController::class, 'deleteLoanDraft'])->name('admin.loans.draft.delete');
+    Route::post('/loans/send-otp', [AdminController::class, 'sendLoanOtp'])->name('admin.loans.send-otp');
+    Route::post('/loans/verify-otp', [AdminController::class, 'verifyLoanOtp'])->name('admin.loans.verify-otp');
     Route::delete('/loans/{loan}', [AdminController::class, 'deleteLoan'])->name('admin.loans.delete');
     Route::post('/installments/customize', [AdminController::class, 'customizeEmiPayment'])->name('admin.installments.customize');
     Route::post('/installments/{installment}/customize', [AdminController::class, 'customizeEmiPayment'])->name('admin.installments.customize.id');
+    
+    // Vehicle Management Routes
+    Route::get('/vehicles', [VehicleController::class, 'index'])->name('admin.vehicles.index');
+    Route::post('/vehicles/companies', [VehicleController::class, 'storeCompany'])->name('admin.vehicles.companies.store');
+    Route::put('/vehicles/companies/{id}', [VehicleController::class, 'updateCompany'])->name('admin.vehicles.companies.update');
+    Route::delete('/vehicles/companies/{id}', [VehicleController::class, 'deleteCompany'])->name('admin.vehicles.companies.delete');
+    Route::post('/vehicles/models', [VehicleController::class, 'storeModel'])->name('admin.vehicles.models.store');
+    Route::put('/vehicles/models/{id}', [VehicleController::class, 'updateModel'])->name('admin.vehicles.models.update');
+    Route::delete('/vehicles/models/{id}', [VehicleController::class, 'deleteModel'])->name('admin.vehicles.models.delete');
+    Route::get('/vehicles/companies/{companyId}/models', [VehicleController::class, 'getModelsByCompany'])->name('admin.vehicles.models.by-company');
+    Route::get('/vehicles/companies-list', [VehicleController::class, 'getCompanies'])->name('admin.vehicles.companies.list');
 });
 
 
